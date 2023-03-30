@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0", "numpy>=1.23.0", "pandas>=1.4.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "explainability-challenges"
+version = "0.0.1"
+authors = [
+  { name="Anna Cai", email="annacai@cs.cmu.edu" },
+  { name="Jacob Rast", email="jrast@cmu.edu" },
+  { name="Abhishek Vijayakumar", email="abhishev@cs.cmu.edu" },
+]
+description = "A package implementing dataset alterations to test explainability methods for machine learning."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/inkyubeytor/explainability-challenges"
+"Bug Tracker" = "https://github.com/inkyubeytor/explainability-challenges/issues"
