@@ -6,6 +6,6 @@ from explainability.structured.structured_manipulator import \
 
 class TestStructuredManipulator:
     def test_init(self):
-        s = StructuredManipulator(
+        _ = StructuredManipulator(
             pd.DataFrame(data={"col1": [1, 2], "col2": [3, 4]}),
             label_column="col2")
