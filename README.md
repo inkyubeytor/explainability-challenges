@@ -7,7 +7,7 @@ First, install `pytest` with
 ```bash
 pip install pytest
 ```
-Then, install the package by running
+Then, install the package locally for development purposes by running
 ```bash
 pip install -e .
 ```
