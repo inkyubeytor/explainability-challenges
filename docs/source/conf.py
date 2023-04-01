@@ -3,8 +3,8 @@
 # -- Project information
 
 project = 'explainability-challenges'
-copyright = '2023 Anna Cai, Abihshek Vijayakumar, Jacob Rast'
-author = 'Anna Cai, Abihshek Vijayakumar, Jacob Rast'
+copyright = '2023 Anna Cai, Abhishek Vijayakumar, Jacob Rast'
+author = 'Anna Cai, Abhishek Vijayakumar, Jacob Rast'
 
 release = '0.0'
 version = '0.0.1'
