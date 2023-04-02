@@ -15,8 +15,10 @@ version = '0.0.1'
 # -- General configuration
 
 extensions = [
+    'readthedocs_ext.readthedocs',
     'sphinx.ext.duration',
     'sphinx.ext.doctest',
+    'sphinx_toolbox.more_autodoc',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
