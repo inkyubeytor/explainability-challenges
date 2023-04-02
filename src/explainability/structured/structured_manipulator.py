@@ -81,9 +81,10 @@ class StructuredManipulator:
                               value: Optional[float] = None) -> Self:
         """
         Replace a random subset of values in a numeric feature column according
-            to the provided scheme. If `value` is given, the replacement value
-            is the provided value. If not, the replacement value is the mean of
-            the values of that column.
+        to the provided scheme. If `value` is given, the replacement value
+        is the provided value. If not, the replacement value is the mean of
+        the values of that column.
+
         :param column: The name of the column to manipulate.
         :param proportion: The proportion of values in the column to replace.
         :param value: The replacement value to use.
@@ -136,6 +137,7 @@ class StructuredManipulator:
                        List[str]] = None) -> Self:
         """
         Applies binning to a numeric column.
+
         :param column: The column to bin.
         :param num_bins: The number of bins to make.
         :param bins: The boundaries for the bins.

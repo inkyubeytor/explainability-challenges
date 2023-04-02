@@ -42,3 +42,8 @@ epub_show_urls = 'footnote'
 # -- Point to package root
 
 sys.path.append(os.path.abspath('../../src/explainability'))
+
+# -- GitHub information for sphinx_toolbox
+
+github_username = "inkyubeytor"
+github_repository = "explainability-challenges"

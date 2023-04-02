@@ -5,7 +5,7 @@ The structured API reference
    :members:
 
 The "structured_manipulator" module
-------------------
+------------------------------------
 
 .. automodule:: explainability.structured.structured_manipulator
    :members:
