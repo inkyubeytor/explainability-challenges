@@ -166,18 +166,33 @@ class StructuredManipulator:
 
         return self
 
-    def apply_duplicate_data(self, column=None, dup_value=None):
+    def split_category_value(self, column: Optional[str] = None,
+                             dup_value: Optional[str] = None) -> Self:
+        """
+        Splits a category for a categorical feature by creating a new category
+        and reassigning the feature for approximately half of the rows with
+        the original feature value to the new feature value.
+
+        :param column: The categorical column to split a feature on.
+        :param dup_value: Optional specification of the particular feature
+            value to split into two feature values.
+        :return: self
+        """
+
         column = self._validate_or_select_feature_column(column,
                                                          dtypes=["object",
                                                                  "category"])
+        values = self.df[column].unique()
         if dup_value is None:
-            dup_value = np.random.choice(self.df[column].unique())
+            dup_value = np.random.choice(values)
+        elif dup_value not in values:
+            raise ValueError("Chosen value not in column.")
+
         old_val = dup_value
         new_val = f"{old_val}_{np.random.randint(0, 1e12)}"
-        old_col = self.df[column].copy()
         new_col = self.df[column].copy()
         new_col[new_col == old_val] = new_val
-        self.df[column] = np.where(np.random.random(len(old_col)) < 0.5,
-                                   old_col,
-                                   new_col)
+        self.df[column] = np.where(np.random.random(len(new_col)) < 0.5,
+                                   self.df[column], new_col)
+
         return self
