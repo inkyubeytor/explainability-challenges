@@ -1,7 +1,11 @@
-API
-===
+The explainability-challenges API reference
+=============================
 
-.. autosummary::
-   :toctree: generated
+.. automodule:: explainability
+   :members:
 
-   explainability-challenges
+The "structured" module
+------------------
+
+.. automodule:: explainability.structured
+   :members:
