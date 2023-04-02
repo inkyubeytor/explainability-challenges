@@ -31,7 +31,12 @@ class StructuredManipulator:
         assert label_column in df.columns
         self.label_column = label_column
 
-        self.feature_columns = [c for c in df.columns if c != label_column]
+    @property
+    def _feature_columns(self):
+        """
+        :return: Dynamically updating list of feature columns.
+        """
+        return [c for c in self.df.columns if c != self.label_column]
 
     def _validate_or_select_feature_column(self, column: Optional[str], *,
                                            dtypes: Optional[Union[
@@ -52,16 +57,16 @@ class StructuredManipulator:
         """
         if column is None:
             if dtypes is None:
-                columns = self.feature_columns
+                columns = self._feature_columns
             elif dtypes == "numeric":
-                columns = [c for c in self.feature_columns if
+                columns = [c for c in self._feature_columns if
                            is_numeric_dtype(self.df[c])]
             else:
-                columns = [c for c in self.feature_columns if
+                columns = [c for c in self._feature_columns if
                            self.df[c].dtype in dtypes]
             column = random.choice(columns)
         else:
-            if column not in self.feature_columns:
+            if column not in self._feature_columns:
                 raise ValueError("Provided column not a feature column.")
 
             if dtypes == "numeric" and not is_numeric_dtype(self.df[column]):
@@ -97,9 +102,23 @@ class StructuredManipulator:
 
         return self
 
-    def apply_redundant_features(self, column=None, num_dups=1,
-                                 dup_col_names=None):
+    def duplicate_features(self, column: Optional[str] = None,
+                           num_dups: int = 1,
+                           dup_col_names: Optional[List[str]] = None):
+        """
+        Creates duplicates of feature columns.
+
+        :param column: The column to duplicate. If no column is provided, a
+            random feature column will be duplicated.
+        :param num_dups: The number of duplicate columns to make.
+        :param dup_col_names: Optional list of names to use for the duplicated
+            columns. If provided, must have length equal to `num_dups`.
+        :return: self
+        """
         column = self._validate_or_select_feature_column(column)
+
+        if dup_col_names is not None and len(dup_col_names) != num_dups:
+            raise ValueError("Invalid number of column names provided.")
 
         for dup in range(num_dups):
             if dup_col_names is not None:
