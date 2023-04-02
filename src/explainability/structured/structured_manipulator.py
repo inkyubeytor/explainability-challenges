@@ -104,7 +104,7 @@ class StructuredManipulator:
 
     def duplicate_features(self, column: Optional[str] = None,
                            num_dups: int = 1,
-                           dup_col_names: Optional[List[str]] = None):
+                           dup_col_names: Optional[List[str]] = None) -> Self:
         """
         Creates duplicates of feature columns.
 
@@ -129,24 +129,39 @@ class StructuredManipulator:
 
         return self
 
-    def apply_adhoc_categorization(self, column, num_bins, bins=None,
-                                   bin_names=None, new_col_name=None):
+    def categorize(self, column: Optional[str] = None,
+                   num_bins: int = 2,
+                   bins: Optional[np.array] = None,
+                   bin_names: Optional[
+                       List[str]] = None) -> Self:
+        """
+        Applies binning to a numeric column.
+        :param column: The column to bin.
+        :param num_bins: The number of bins to make.
+        :param bins: The boundaries for the bins.
+        :param bin_names: Category labels for each bin.
+        :return: self
+        """
+
         column = self._validate_or_select_feature_column(column,
                                                          dtypes="numeric")
         if bins is None:
             bins = np.linspace(self.df[column].min(), self.df[column].max(),
                                num=num_bins + 1)
-        if new_col_name is None:
-            new_col_name = column + "_new"
-        self.df[new_col_name] = ""
-        for i in range(num_bins):
-            if bin_names is None:
-                bin_name = column + '_' + str(bins[i]) + '_' + str(bins[i + 1])
-            else:
-                bin_name = bin_names[i]
-            print(bin_name)
-            self.df.loc[(self.df[column] >= bins[i]) & (
-                    self.df[column] <= bins[i + 1]), new_col_name] = bin_name
+        elif len(bins) - 1 != num_bins:
+            raise ValueError(
+                f"Number of bin boundaries ({len(bins)} provided) must be"
+                f"one more than number of bins ({num_bins} provided).")
+
+        if bin_names is not None and len(bin_names) != len(bins) - 1:
+            raise ValueError(
+                f"{len(bin_names)} labels provided for {len(bins) - 1} bins.")
+
+        if bin_names is not None:
+            self.df[column] = pd.cut(self.df[column], bins, labels=bin_names)
+        else:
+            self.df[column] = pd.cut(self.df[column], bins)
+
         return self
 
     def apply_duplicate_data(self, column=None, dup_value=None):
