@@ -1,11 +1,11 @@
-The explainability-challenges API reference
+The structured API reference
 =============================
 
-.. automodule:: explainability
+.. automodule:: explainability.structured
    :members:
 
-The "structured" module
+The "structured_manipulator" module
 ------------------
 
-.. automodule:: explainability.structured
+.. automodule:: explainability.structured.structured_manipulator
    :members:
