@@ -1,8 +1,9 @@
 import random
-from typing import List, Optional
+from typing import List, Literal, Optional, Self, Union
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 
 
 class StructuredManipulator:
@@ -33,21 +34,28 @@ class StructuredManipulator:
         self.feature_columns = [c for c in df.columns if c != label_column]
 
     def _validate_or_select_feature_column(self, column: Optional[str], *,
-                                           dtypes: Optional[
-                                               List[str]] = None) -> str:
+                                           dtypes: Optional[Union[
+                                               List[str],
+                                               Literal["numeric"]
+                                           ]] = None) -> str:
         """
         Validate or provide a feature column argument for a transformation.
 
         :param column: The argument to validate as being a feature column in
             the DataFrame. If `None`, a value is selected from the available
             feature columns.
-        :param dtypes: An optional list of datatypes to ensure the type of the
-            column is part of.
+        :param dtypes: An optional specifier for what datatypes the selected
+            column should be. If `"string"` or `"numeric"`, uses the associated
+            pandas function for checking the dtype. If a list, explicitly
+            checks that the dtype of the column is in the list.
         :return: The name of the selected column.
         """
         if column is None:
             if dtypes is None:
                 columns = self.feature_columns
+            elif dtypes == "numeric":
+                columns = [c for c in self.feature_columns if
+                           is_numeric_dtype(self.df[c])]
             else:
                 columns = [c for c in self.feature_columns if
                            self.df[c].dtype in dtypes]
@@ -55,32 +63,37 @@ class StructuredManipulator:
         else:
             if column not in self.feature_columns:
                 raise ValueError("Provided column not a feature column.")
-            if dtypes is not None:
-                if self.df[column].dtype not in dtypes:
-                    raise ValueError(
-                        f"Provided column has type not in {dtypes}")
+
+            if dtypes == "numeric" and not is_numeric_dtype(self.df[column]):
+                raise ValueError("Provided column not a numeric column.")
+            elif type(dtypes) == List and self.df[column].dtype not in dtypes:
+                raise ValueError(f"Provided column has type not in {dtypes}")
+
         return column
 
-    def apply_missing_values(self, column=None, amount=0.1, value='mean'):
-        column = self._validate_or_select_feature_column(column)
+    def replace_random_values(self, column: Optional[str] = None,
+                              proportion: float = 1.0,
+                              value: Optional[float] = None) -> Self:
+        """
+        Replace a random subset of values in a numeric feature column according
+            to the provided scheme. If `value` is given, the replacement value
+            is the provided value. If not, the replacement value is the mean of
+            the values of that column.
+        :param column: The name of the column to manipulate.
+        :param proportion: The proportion of values in the column to replace.
+        :param value: The replacement value to use.
+        :return: self
+        """
+        column = self._validate_or_select_feature_column(column,
+                                                         dtypes="numeric")
 
         idx = self.df.index.values
         np.random.shuffle(idx)
-        if type(amount) == int:
-            idx = idx[:amount]
-        elif type(amount) == float:
-            idx = idx[:int(amount * len(self.df))]
-        else:
-            raise ValueError("invalid type for 'amount' (not int or float)")
+        idx = idx[:int(proportion * len(self.df))]
 
-        if value == 'mean':
+        if value is not None:
             value = self.df[column].mean()
-        if type(value) == int or type(value) == float or np.issubdtype(
-                type(value),
-                np.number):
-            self.df.loc[idx, column] = value
-        else:
-            raise ValueError("invalid type for 'value' (not numeric)")
+        self.df.loc[idx, column] = value
 
         return self
 
@@ -100,7 +113,7 @@ class StructuredManipulator:
     def apply_adhoc_categorization(self, column, num_bins, bins=None,
                                    bin_names=None, new_col_name=None):
         column = self._validate_or_select_feature_column(column,
-                                                         dtypes=["float"])
+                                                         dtypes="numeric")
         if bins is None:
             bins = np.linspace(self.df[column].min(), self.df[column].max(),
                                num=num_bins + 1)
