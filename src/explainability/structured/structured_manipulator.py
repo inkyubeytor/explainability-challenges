@@ -1,9 +1,44 @@
+import pprint
 import random
-from typing import List, Literal, Optional, Self, Union
+from dataclasses import dataclass
+from functools import wraps
+from typing import Any, Callable, Dict, List, Literal, Optional, ParamSpec, \
+    Self, Tuple, TypeVar, Union
 
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
+
+P = ParamSpec("P")
+R = TypeVar("R")
+TraceData = Dict[str, Any]
+
+
+def _trace(f: Callable[P, Tuple[R, TraceData]]) -> Callable[P, R]:
+    """
+    Wraps all transformations to store a record of the undertaken action.
+
+    :param f: The method to trace.
+    :return: A function that extracts the trace data and returns the
+        expected output.
+    """
+
+    @wraps(f)
+    def _wrapper(self, *args, **kwargs):
+        out, trace_data = f(self, *args, **kwargs)
+        self._traces.append(Trace(operation=f.__name__, data=trace_data))
+        return out
+
+    return _wrapper
+
+
+@dataclass
+class Trace:
+    operation: str
+    data: TraceData
+
+    def __str__(self):
+        return "\n".join(["", self.operation, pprint.pformat(self.data), ""])
 
 
 class StructuredManipulator:
@@ -26,10 +61,14 @@ class StructuredManipulator:
         :param label_column: The column corresponding to the prediction target.
             All other columns are assumed to be feature columns.
         """
-        self.df = df.copy(deep=True)
-
+        self.df = df.copy(deep=True).sample(frac=1).reset_index(drop=True)
+        self._traces: List[Trace] = []
         assert label_column in df.columns
         self.label_column = label_column
+
+    @property
+    def trace(self):
+        return "\n".join(str(t) for t in self._traces)
 
     @property
     def _feature_columns(self):
@@ -76,8 +115,9 @@ class StructuredManipulator:
 
         return column
 
+    @_trace
     def replace_random_values(self, column: Optional[str] = None,
-                              proportion: float = 1.0,
+                              proportion: float = 0.5,
                               value: Optional[float] = None) -> Self:
         """
         Replace a random subset of values in a numeric feature column according
@@ -97,12 +137,15 @@ class StructuredManipulator:
         np.random.shuffle(idx)
         idx = idx[:int(proportion * len(self.df))]
 
-        if value is not None:
+        if value is None:
             value = self.df[column].mean()
         self.df.loc[idx, column] = value
 
-        return self
+        return self, {"column": column,
+                      "proportion": proportion,
+                      "value": value}
 
+    @_trace
     def duplicate_features(self, column: Optional[str] = None,
                            num_dups: int = 1,
                            dup_col_names: Optional[List[str]] = None) -> Self:
@@ -121,15 +164,17 @@ class StructuredManipulator:
         if dup_col_names is not None and len(dup_col_names) != num_dups:
             raise ValueError("Invalid number of column names provided.")
 
-        for dup in range(num_dups):
-            if dup_col_names is not None:
-                dup_col_name = dup_col_names[dup]
-            else:
-                dup_col_name = column + str(dup + 1)
+        dup_col_names = dup_col_names if dup_col_names is not None else \
+            [column + str(dup + 1) for dup in range(num_dups)]
+
+        for dup_col_name in dup_col_names:
             self.df[dup_col_name] = self.df[column]
 
-        return self
+        return self, {"column": column,
+                      "num_dups": num_dups,
+                      "dup_col_names": dup_col_names}
 
+    @_trace
     def categorize(self, column: Optional[str] = None,
                    num_bins: int = 2,
                    bins: Optional[np.array] = None,
@@ -147,8 +192,13 @@ class StructuredManipulator:
 
         column = self._validate_or_select_feature_column(column,
                                                          dtypes="numeric")
+
+        if self.df[column].min() == self.df[column].max():
+            raise ValueError("Column has only one value.")
         if bins is None:
-            bins = np.linspace(self.df[column].min(), self.df[column].max(),
+            epsilon = 1e-12
+            bins = np.linspace(self.df[column].min() - epsilon,
+                               self.df[column].max() + epsilon,
                                num=num_bins + 1)
         elif len(bins) - 1 != num_bins:
             raise ValueError(
@@ -162,12 +212,19 @@ class StructuredManipulator:
         if bin_names is not None:
             self.df[column] = pd.cut(self.df[column], bins, labels=bin_names)
         else:
-            self.df[column] = pd.cut(self.df[column], bins)
+            self.df[column] = pd.cut(self.df[column], bins, duplicates="drop")
 
-        return self
+        bin_names = self.df[column].unique()
 
+        return self, {"column": column,
+                      "num_bins": num_bins,
+                      "bins": bins,
+                      "bin_names": bin_names}
+
+    @_trace
     def split_category_value(self, column: Optional[str] = None,
-                             dup_value: Optional[str] = None) -> Self:
+                             dup_value: Optional[str] = None,
+                             proportion: float = 0.5) -> Self:
         """
         Splits a category for a categorical feature by creating a new category
         and reassigning the feature for approximately half of the rows with
@@ -176,23 +233,29 @@ class StructuredManipulator:
         :param column: The categorical column to split a feature on.
         :param dup_value: Optional specification of the particular feature
             value to split into two feature values.
+        :param proportion: The proportion of values to replace with new values.
         :return: self
         """
 
         column = self._validate_or_select_feature_column(column,
                                                          dtypes=["object",
                                                                  "category"])
-        values = self.df[column].unique()
+
+        values = list(self.df[column].unique())
         if dup_value is None:
             dup_value = np.random.choice(values)
         elif dup_value not in values:
             raise ValueError("Chosen value not in column.")
 
         old_val = dup_value
-        new_val = f"{old_val}_{np.random.randint(0, 1e12)}"
-        new_col = self.df[column].copy()
-        new_col[new_col == old_val] = new_val
-        self.df[column] = np.where(np.random.random(len(new_col)) < 0.5,
-                                   self.df[column], new_col)
+        new_val = f"{old_val}_{np.random.randint(0, 1e6)}"
+        values.append(new_val)
+        new_col = pd.Categorical(self.df[column], categories=values)
+        flags = (new_col == old_val) & \
+                (np.random.random(len(new_col)) < proportion)
+        new_col[flags] = new_val
+        self.df[column] = new_col
 
-        return self
+        return self, {"column": column,
+                      "dup_value": dup_value,
+                      "new_value": new_val}
