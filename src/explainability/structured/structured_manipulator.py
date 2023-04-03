@@ -164,6 +164,9 @@ class StructuredManipulator:
         """
         column = self._validate_or_select_feature_column(column)
 
+        if num_dups < 1:
+            raise ValueError("Number of duplicates must be at least 1.")
+
         if dup_col_names is not None and len(dup_col_names) != num_dups:
             raise ValueError("Invalid number of column names provided.")
 
