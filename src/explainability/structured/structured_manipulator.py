@@ -1,5 +1,4 @@
 import pprint
-import random
 from dataclasses import dataclass
 from functools import wraps
 from typing import Any, Callable, Dict, List, Literal, Optional, ParamSpec, \
@@ -52,7 +51,8 @@ class StructuredManipulator:
     be maintained.
     """
 
-    def __init__(self, df: pd.DataFrame, label_column: str):
+    def __init__(self, df: pd.DataFrame, label_column: str,
+                 random_state: Optional[int] = None) -> None:
         """
         Initializes a new StructuredManipulator. Note that this creates a deep
         copy of the entire passed dataset.
@@ -60,9 +60,18 @@ class StructuredManipulator:
         :param df: The dataframe to manipulate.
         :param label_column: The column corresponding to the prediction target.
             All other columns are assumed to be feature columns.
+        :param random_state: A random state for reproducibility in stochastic
+            operations.
+        :return: None
         """
-        self.df = df.copy(deep=True).sample(frac=1).reset_index(drop=True)
+        self.random_state = random_state
+
+        self.df = df.copy(deep=True) \
+            .sample(frac=1, random_state=self.random_state) \
+            .reset_index(drop=True)
+
         self._traces: List[Trace] = []
+
         assert label_column in df.columns
         self.label_column = label_column
 
@@ -103,7 +112,9 @@ class StructuredManipulator:
             else:
                 columns = [c for c in self._feature_columns if
                            self.df[c].dtype in dtypes]
-            column = random.choice(columns)
+
+            rng = np.random.default_rng(seed=self.random_state)
+            column = rng.choice(columns)
         else:
             if column not in self._feature_columns:
                 raise ValueError("Provided column not a feature column.")
@@ -137,7 +148,8 @@ class StructuredManipulator:
             raise ValueError("Provided proportion is not between 0 and 1.")
 
         idx = self.df.index.values
-        np.random.shuffle(idx)
+        rng = np.random.default_rng(seed=self.random_state)
+        rng.shuffle(idx)
         idx = idx[:int(proportion * len(self.df))]
 
         if value is None:
@@ -248,20 +260,60 @@ class StructuredManipulator:
                                                                  "category"])
 
         values = list(self.df[column].unique())
+        rng = np.random.default_rng(seed=self.random_state)
         if dup_value is None:
-            dup_value = np.random.choice(values)
+            dup_value = rng.choice(values)
         elif dup_value not in values:
             raise ValueError("Chosen value not in column.")
 
         old_val = dup_value
-        new_val = f"{old_val}_{np.random.randint(0, 1e6)}"
+        new_val = f"{old_val}_{rng.integers(0, 1e6)}"
         values.append(new_val)
         new_col = pd.Categorical(self.df[column], categories=values)
-        flags = (new_col == old_val) & \
-                (np.random.random(len(new_col)) < proportion)
+        flags = (new_col == old_val) & (rng.random(len(new_col)) < proportion)
         new_col[flags] = new_val
         self.df[column] = new_col
 
         return self, {"column": column,
                       "dup_value": dup_value,
                       "new_value": new_val}
+
+    @_trace
+    def sort_values(self, column: Optional[str] = None,
+                    ascending: bool = True) -> Self:
+        """
+        Sort the internal DataFrame by a column. This sort order is maintained
+        when creating train-test splits, so sorting attempts to introduce
+        out of distribution values in the given feature at test time.
+
+        :param column: The column to sort on.
+        :param ascending: Whether the sort should be ascending or descending.
+        :return: self
+        """
+        column = self._validate_or_select_feature_column(column)
+        self.df.sort_values(by=column, ascending=ascending, inplace=True)
+
+        return self, {"column": column, "ascending": ascending}
+
+    def train_test_split(self, test_proportion: float = 0.2) -> \
+            Tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series]:
+        """
+        Partition the data into training and testing data according to the
+        given proportion.
+
+        :param test_proportion: The proportion of data to use for testing.
+        :return: Tuple (X_train, y_train, X_test, y_test) partitioning the
+            manipulated DataFrame.
+        """
+        num_test = int(test_proportion * len(self.df))
+        num_train = len(self.df) - num_test
+
+        train_df = self.df.iloc[:num_test, :]
+        x_train = train_df.loc[:, train_df.columns != self.label_column]
+        y_train = train_df[self.label_column]
+
+        test_df = self.df.iloc[num_train:, :]
+        x_test = test_df.loc[:, test_df.columns != self.label_column]
+        y_test = test_df[self.label_column]
+
+        return x_train, y_train, x_test, y_test

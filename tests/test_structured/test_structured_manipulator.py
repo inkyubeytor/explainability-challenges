@@ -20,7 +20,8 @@ class TestStructuredManipulator:
         _ = sm.replace_random_values() \
             .duplicate_features() \
             .categorize() \
-            .split_category_value()
+            .split_category_value() \
+            .sort_values()
 
         _ = sm.trace
 
