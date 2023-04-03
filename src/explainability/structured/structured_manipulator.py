@@ -133,6 +133,9 @@ class StructuredManipulator:
         column = self._validate_or_select_feature_column(column,
                                                          dtypes="numeric")
 
+        if proportion < 0 or proportion > 1:
+            raise ValueError("Provided proportion is not between 0 and 1.")
+
         idx = self.df.index.values
         np.random.shuffle(idx)
         idx = idx[:int(proportion * len(self.df))]
