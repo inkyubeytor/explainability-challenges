@@ -210,7 +210,8 @@ class StructuredManipulator:
 
         column = self._validate_or_select_feature_column(column,
                                                          dtypes="numeric")
-
+        if num_bins < 2:
+            raise ValueError("Num bins must be greater than 1.")
         if self.df[column].min() == self.df[column].max():
             raise ValueError("Column has only one value.")
         if bins is None:

@@ -1,5 +1,6 @@
 import copy
 import pandas as pd
+import numpy as np
 import pytest
 
 from explainability.structured.structured_manipulator import \
@@ -61,8 +62,8 @@ class TestStructuredManipulator:
 
         sm3 = copy.deepcopy(sm).duplicate_features("col2")
         sm4 = copy.deepcopy(sm).duplicate_features("col2", 1, ["col21"])
-        assert (sm3.trace == sm4.trace)
-        assert ((sm3.df["col2"] == sm3.df["col21"]).sum() == 6)
+        assert(sm3.trace == sm4.trace)
+        assert((sm3.df["col2"] == sm3.df["col21"]).sum() == 6)
 
         with pytest.raises(ValueError):
             _ = copy.deepcopy(sm).duplicate_features("col3")
@@ -72,3 +73,32 @@ class TestStructuredManipulator:
 
         with pytest.raises(ValueError):
             _ = copy.deepcopy(sm).duplicate_features(dup_col_names=["1", "2"])
+
+    def test_categorize(self):
+        sm = StructuredManipulator(
+            pd.DataFrame(data={"col1": [1, 2, 3, 4, 5, 6],
+                               "col2": ['a', 'a', 'a', 'b', 'b', 'b'],
+                               "col3": [1, 1, 1, 1, 1, 1]}, ),
+            label_column="col3")
+
+        sm1 = copy.deepcopy(sm).categorize("col1")
+        sm2 = copy.deepcopy(sm).categorize("col1", 2, np.array([1. - 1e-12, 3.5, 6.]))
+        assert(sm1.trace == sm2.trace)
+        assert(len(sm1.df["col1"].unique()) == 2)
+
+        sm3 = copy.deepcopy(sm).categorize("col1", bin_names=["x", "y"])
+        assert(len(sm3.df["col1"].unique()) == 2)
+        assert("x" in sm3.df["col1"].unique())
+        assert("y" in sm3.df["col1"].unique())
+
+        with pytest.raises(ValueError):
+            _ = copy.deepcopy(sm).categorize("col2")
+
+        with pytest.raises(ValueError):
+            _ = copy.deepcopy(sm).categorize(num_bins=1)
+
+        with pytest.raises(ValueError):
+            _ = copy.deepcopy(sm).categorize(bins=np.arange(2))
+
+        with pytest.raises(ValueError):
+            _ = copy.deepcopy(sm).categorize(bin_names=["1"])
