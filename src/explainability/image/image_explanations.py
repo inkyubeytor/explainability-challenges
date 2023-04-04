@@ -3,9 +3,6 @@ Original file is located at
     https://colab.research.google.com/drive/1hHwBaMwJG86Q3Uaqx1hJJcjmMXLx4umt
 """
 
-# https://github.com/jacobgil/pytorch-grad-cam
-
-
 import warnings
 
 import cv2

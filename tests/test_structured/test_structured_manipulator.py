@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import pytest
 
-from explainability.structured.structured_manipulator import \
+from explainability.structured.core.structured_manipulator import \
     StructuredManipulator
 
 
