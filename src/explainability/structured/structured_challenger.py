@@ -1,21 +1,20 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Generic, Optional, TypeVar
+from typing import Dict, Optional
 
 import pandas as pd
-from sklearn.base import ClassifierMixin, RegressorMixin
+from sklearn.base import BaseEstimator, clone
 
 from .structured_manipulator import StructuredManipulator
 
-T = TypeVar("T")
 
-
-class _StructuredChallenger(Generic[T], ABC):
+class SKChallenger(ABC):
     """
     Base class for challenges to explainability methods for supervised learning
-    tasks using structured tabular data.
+    tasks using structured tabular data and scikit-learn models.
     """
 
-    def __init__(self, model: T, df: pd.DataFrame, label_column: str,
+    def __init__(self, model: BaseEstimator,
+                 df: pd.DataFrame, label_column: str,
                  random_state: Optional[int] = None) -> None:
         """
         :param model: The model to implement challenges on.
@@ -27,37 +26,11 @@ class _StructuredChallenger(Generic[T], ABC):
         """
         self.df = df
         self.label_column = label_column
-        self.model = model
+        self._model = model
         self.challenges: Dict[str, StructuredManipulator] = {
             "base": StructuredManipulator(df, label_column, random_state)
         }
-        self.models: Dict[str, T] = {}
-
-    @abstractmethod
-    def generate_challenges(self) -> None:
-        """
-        Abstract method for populating `self.challenges` with
-        `StructuredManipulator` objects representing each modified dataset
-        for the challenge.
-
-        :return: None
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def train_models(self) -> None:
-        """
-        Abstract method for training a model on each dataset for the challenge.
-
-        :return: None
-        """
-        raise NotImplementedError
-
-
-class SKClassifierChallenger(_StructuredChallenger[ClassifierMixin]):
-    """
-    `StructuredChallenger` specifically for scikit-learn classification models.
-    """
+        self.models: Dict[str, BaseEstimator] = {}
 
     @abstractmethod
     def generate_challenges(self) -> None:
@@ -72,35 +45,10 @@ class SKClassifierChallenger(_StructuredChallenger[ClassifierMixin]):
 
     def train_models(self) -> None:
         """
-        Trains a model on each dataset for the challenge.
+        Train a model on each dataset for the challenge.
 
         :return: None
         """
-        # TODO: implement for sklearn classifiers
-        raise NotImplementedError
-
-
-class SKRegressorChallenger(_StructuredChallenger[RegressorMixin]):
-    """
-    `StructuredChallenger` specifically for scikit-learn regression models.
-    """
-
-    @abstractmethod
-    def generate_challenges(self) -> None:
-        """
-        Abstract method for populating `self.challenges` with
-        `StructuredManipulator` objects representing each modified dataset
-        for the challenge.
-
-        :return: None
-        """
-        raise NotImplementedError
-
-    def train_models(self) -> None:
-        """
-        Trains a model on each dataset for the challenge.
-
-        :return: None
-        """
-        # TODO: implement for sklearn regressors
-        raise NotImplementedError
+        for challenge_name, sm in self.challenges.items():
+            x, y, _, _ = sm.train_test_split()
+            self.models[challenge_name] = clone(self._model).fit(x, y)
