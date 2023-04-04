@@ -6,6 +6,8 @@ Original file is located at
 # https://github.com/jacobgil/pytorch-grad-cam
 
 
+import warnings
+
 import cv2
 import numpy as np
 import torch
@@ -115,7 +117,7 @@ def __preprocess_image(pil_im, resize_im=True):
     if type(pil_im) != Image.Image:
         try:
             pil_im = Image.fromarray(pil_im)
-        except Exception as _:
+        except Exception:
             print("could not transform PIL_img to a PIL Image object."
                   "Please check input.")
 
@@ -154,8 +156,6 @@ def __get_positive_negative_saliency(gradient):
 
 
 """# Eigen CAM Helper Code"""
-
-import warnings
 
 warnings.filterwarnings('ignore')
 warnings.simplefilter('ignore')
@@ -266,7 +266,6 @@ def grad_cam(image, model):
 
 def guided_backprop(image, model):
     to_pil = torchvision.transforms.ToPILImage()
-    to_tensor = torchvision.transforms.ToTensor()
 
     class_int = torch.nn.functional.softmax(model(image), dim=1).argmax()
 
