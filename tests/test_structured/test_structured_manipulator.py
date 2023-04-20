@@ -125,3 +125,22 @@ class TestStructuredManipulator:
 
         with pytest.raises(ValueError):
             _ = copy.deepcopy(sm).split_category_value(proportion=2)
+
+    def test_sort_split(self):
+        sm = StructuredManipulator(
+            pd.DataFrame(data={"col1": [6, 2, 3, 4, 5, 1],
+                               "col2": ['a', 'a', 'b', 'a', 'b', 'b'],
+                               "col3": [1, 1, 1, 1, 1, 1]}, ),
+            label_column="col3")
+
+        sm.sort_values("col1")
+        assert(sorted(sm.df["col1"]) == list(sm.df["col1"]))
+        assert(sorted(sm.df["col2"]) != list(sm.df["col2"]))
+
+        x_train, y_train, x_test, y_test = sm.train_test_split()
+        assert((x_train.index == y_train.index).all())
+        assert((x_test.index == y_test.index).all())
+        assert(len(y_train) > len(y_test))
+        assert(not set(x_train.index).intersection(set(x_test.index)))
+        assert(sorted(x_train["col1"]) == list(x_train["col1"]))
+        assert(sorted(x_test["col1"]) == list(x_test["col1"]))

@@ -310,13 +310,12 @@ class StructuredManipulator:
             manipulated DataFrame.
         """
         num_test = int(test_proportion * len(self.df))
-        num_train = len(self.df) - num_test
 
-        train_df = self.df.iloc[:num_test, :]
+        train_df = self.df.iloc[:-num_test]
         x_train = train_df.loc[:, train_df.columns != self.label_column]
         y_train = train_df[self.label_column]
 
-        test_df = self.df.iloc[num_train:, :]
+        test_df = self.df.iloc[-num_test:]
         x_test = test_df.loc[:, test_df.columns != self.label_column]
         y_test = test_df[self.label_column]
 
