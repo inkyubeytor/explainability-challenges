@@ -121,7 +121,7 @@ class StructuredManipulator:
 
             if dtypes == "numeric" and not is_numeric_dtype(self.df[column]):
                 raise ValueError("Provided column not a numeric column.")
-            elif type(dtypes) == List and self.df[column].dtype not in dtypes:
+            elif isinstance(dtypes, List) and self.df[column].dtype not in dtypes:
                 raise ValueError(f"Provided column has type not in {dtypes}")
 
         return column
@@ -259,6 +259,9 @@ class StructuredManipulator:
         column = self._validate_or_select_feature_column(column,
                                                          dtypes=["object",
                                                                  "category"])
+
+        if proportion < 0 or proportion > 1:
+            raise ValueError("Provided proportion is not between 0 and 1.")
 
         values = list(self.df[column].unique())
         rng = np.random.default_rng(seed=self.random_state)

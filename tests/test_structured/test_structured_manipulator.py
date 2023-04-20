@@ -102,3 +102,26 @@ class TestStructuredManipulator:
 
         with pytest.raises(ValueError):
             _ = copy.deepcopy(sm).categorize(bin_names=["1"])
+
+    def test_split_category_value(self):
+        sm = StructuredManipulator(
+            pd.DataFrame(data={"col1": [1, 2, 3, 4, 5, 6],
+                               "col2": ['a', 'a', 'a', 'b', 'b', 'b'],
+                               "col3": [1, 1, 1, 1, 1, 1]}, ),
+            label_column="col3")
+
+        sm1 = copy.deepcopy(sm).split_category_value("col2")
+        assert((sm1.df["col2"] == 'a').sum() + (sm1.df["col2"] == 'b').sum() < 6)
+
+        sm2 = copy.deepcopy(sm).split_category_value("col2", 'b', 0.6667)
+        assert((sm2.df["col2"] == 'a').sum() == 3)
+        assert((sm2.df["col2"] == 'a').sum() + (sm2.df["col2"] == 'b').sum() < 6)
+
+        with pytest.raises(ValueError):
+            _ = copy.deepcopy(sm).split_category_value("col1")
+
+        with pytest.raises(ValueError):
+            _ = copy.deepcopy(sm).split_category_value(dup_value='c')
+
+        with pytest.raises(ValueError):
+            _ = copy.deepcopy(sm).split_category_value(proportion=2)
