@@ -13,7 +13,7 @@ class CategorizeChallenger(SKChallenger):
         """
         Generate multiple ad-hoc categorization challenges.
         """
-        for i in range(2, 16):
+        for i in range(2, 5):
             name = f"challenge_{i}"
             sm = StructuredManipulator(self.df, self.label_column)
             sm.categorize(num_bins=random.randint(2, 4))
