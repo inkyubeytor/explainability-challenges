@@ -1,11 +1,14 @@
 The structured API reference
 =============================
 
-.. automodule:: explainability.structured
+Core
+-----
+
+.. autoclass:: explainability.structured.core.structured_manipulator.StructuredManipulator
    :members:
 
-The "structured_manipulator" module
-------------------------------------
-
-.. automodule:: explainability.structured.structured_manipulator
+.. autoclass:: explainability.structured.core.structured_challenger.SKChallenger
    :members:
+
+The image API reference
+=============================
