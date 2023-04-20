@@ -5,7 +5,7 @@ import sys
 
 # -- Project information
 
-project = 'explainability-challenges'
+project = 'explainability-challengers'
 copyright = '2023 Anna Cai, Abhishek Vijayakumar, Jacob Rast'
 author = 'Anna Cai, Abhishek Vijayakumar, Jacob Rast'
 
@@ -46,4 +46,4 @@ sys.path.append(os.path.abspath('../../src/explainability'))
 # -- GitHub information for sphinx_toolbox
 
 github_username = "inkyubeytor"
-github_repository = "explainability-challenges"
+github_repository = "explainability-challengers"
