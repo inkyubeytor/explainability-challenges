@@ -20,3 +20,10 @@ To run only fast tests, run
 ```bash
 pytest -m "not slow"
 ```
+
+
+For Windows devices, if the script hangs due to `kaleido`, run
+```bash
+pip uninstall kaleido
+pip install kaleido==0.1.0.post1
+```
