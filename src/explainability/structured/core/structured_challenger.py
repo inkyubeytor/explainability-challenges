@@ -26,6 +26,7 @@ class SKChallenger(ABC):
         """
         self.df = df
         self.label_column = label_column
+        self.random_state = random_state
         self._model = model
         self.challenges: Dict[str, StructuredManipulator] = {
             "base": StructuredManipulator(df, label_column, random_state)

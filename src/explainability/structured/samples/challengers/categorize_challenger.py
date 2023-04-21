@@ -15,6 +15,6 @@ class CategorizeChallenger(SKChallenger):
         """
         for i in range(2, 16):
             name = f"challenge_{i}"
-            sm = StructuredManipulator(self.df, self.label_column)
+            sm = StructuredManipulator(self.df, self.label_column, self.random_state)
             sm.categorize(num_bins=random.randint(2, 4))
             self.challenges[name] = sm
