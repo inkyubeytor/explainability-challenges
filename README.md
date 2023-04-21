@@ -16,3 +16,7 @@ Finally, run the test suite with
 ```bash
 pytest
 ```
+To run only fast tests, run
+```bash
+pytest -m "not slow"
+```
