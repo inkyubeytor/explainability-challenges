@@ -3,9 +3,9 @@ from typing import Dict, Optional
 
 import pandas as pd
 from sklearn.base import BaseEstimator, clone
+from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.compose import ColumnTransformer
 
 from .structured_manipulator import StructuredManipulator
 
@@ -33,7 +33,7 @@ class SKChallenger(ABC):
         self.challenges: Dict[str, StructuredManipulator] = {
             "base": StructuredManipulator(df, label_column, random_state)
         }
-        self.models: Dict[str, object] = {}
+        self.models: Dict[str, Pipeline] = {}
 
     @abstractmethod
     def generate_challenges(self) -> None:
@@ -61,4 +61,6 @@ class SKChallenger(ABC):
             pipeline = Pipeline([("encoder", encoder),
                                  ("scaler", StandardScaler()),
                                  ("model", model)])
-            self.models[challenge_name] = pipeline.fit(x, y)
+
+            # noinspection PyTypeChecker
+            self.models[challenge_name] = pipeline.fit(x, y)  # noqa

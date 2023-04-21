@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "numpy>=1.23.0", "pandas>=1.4.0", "scikit-learn>=1.2.0", "torch>=2.0.0", "torchvision>=0.15.0", "torchattacks>=3.4.0", "Pillow>=9.5.0", "opencv-python>=4.7.0", "grad-cam>=1.4.0", "matplotlib>=3.7.0", "pytest>=7.2.0"]
+requires = ["setuptools>=61.0", "numpy>=1.23.0", "pandas>=1.4.0", "scikit-learn>=1.2.0", "torch>=2.0.0", "torchvision>=0.15.0", "torchattacks>=3.4.0", "Pillow>=9.5.0", "opencv-python>=4.7.0", "grad-cam>=1.4.0", "matplotlib>=3.7.0", "pytest>=7.2.0", "interpret>=0.3.0", "kaleido>=0.2.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -12,7 +12,7 @@ authors = [
 ]
 description = "A package implementing dataset alterations to test explainability methods for machine learning."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",

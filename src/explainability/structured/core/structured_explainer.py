@@ -3,13 +3,13 @@ import os
 from abc import ABC, abstractmethod
 from os import PathLike
 from tempfile import TemporaryDirectory
-from typing import Optional, Union
+from typing import Union
 
 import matplotlib.pyplot as plt
-from sklearn.base import BaseEstimator
+from sklearn.pipeline import Pipeline
 
-from structured_challenger import SKChallenger
-from structured_manipulator import StructuredManipulator
+from .structured_challenger import SKChallenger
+from .structured_manipulator import StructuredManipulator
 
 Path = Union[PathLike, str]
 
@@ -20,7 +20,7 @@ class SKExplainer(ABC):
     """
 
     @abstractmethod
-    def explain_global(self, trained_model: BaseEstimator,
+    def explain_global(self, trained_model: Pipeline,
                        manipulator: StructuredManipulator,
                        path: Path) -> None:
         """
@@ -34,7 +34,7 @@ class SKExplainer(ABC):
         raise NotImplementedError
 
     def explain_challenge(self, c: SKChallenger,
-                          path: Optional[Path] = None) -> None:
+                          path: Path) -> None:
         """
         Generates a grid of global explanations corresponding to the given
         challenge.

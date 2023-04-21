@@ -2,7 +2,7 @@ import pprint
 from dataclasses import dataclass
 from functools import wraps
 from typing import Any, Callable, Dict, List, Literal, Optional, ParamSpec, \
-    Self, Tuple, TypeVar, Union
+    Tuple, TypeVar, Union
 
 import numpy as np
 import pandas as pd
@@ -11,6 +11,10 @@ from pandas.api.types import is_numeric_dtype
 P = ParamSpec("P")
 R = TypeVar("R")
 TraceData = Dict[str, Any]
+
+# hack to support Python 3.10
+# for Python 3.11 and higher, import Self from typing
+Self = Any
 
 
 def _trace(f: Callable[P, Tuple[R, TraceData]]) -> Callable[P, R]:
