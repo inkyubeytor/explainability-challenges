@@ -247,6 +247,7 @@ class StructuredManipulator:
     @_trace
     def split_category_value(self, column: Optional[str] = None,
                              dup_value: Optional[str] = None,
+                             new_value: Optional[str] = None,
                              proportion: float = 0.5) -> Self:
         """
         Splits a category for a categorical feature by creating a new category
@@ -256,6 +257,9 @@ class StructuredManipulator:
         :param column: The categorical column to split a feature on.
         :param dup_value: Optional specification of the particular feature
             value to split into two feature values.
+        :param new_value: Optional new value for one of the feature values post
+            split. If None, will be set to old value followed by a string of
+            random integers.
         :param proportion: The proportion of values to replace with new values.
         :return: self
         """
@@ -275,10 +279,12 @@ class StructuredManipulator:
             raise ValueError("Chosen value not in column.")
 
         old_val = dup_value
-        new_val = f"{old_val}_{rng.integers(0, 1e6)}"
+        new_val = f"{old_val}_{rng.integers(0, 1e6)}" if new_value is None else new_value
         values.append(new_val)
         new_col = pd.Categorical(self.df[column], categories=values)
-        flags = (new_col == old_val) & (rng.random(len(new_col)) < proportion)
+        flags = self.df.index[new_col == old_val].values
+        rng.shuffle(flags)
+        flags = flags[:int(len(flags) * proportion)]
         new_col[flags] = new_val
         self.df[column] = new_col
 

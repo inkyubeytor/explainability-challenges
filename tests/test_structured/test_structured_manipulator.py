@@ -113,9 +113,9 @@ class TestStructuredManipulator:
         sm1 = copy.deepcopy(sm).split_category_value("col2")
         assert((sm1.df["col2"] == 'a').sum() + (sm1.df["col2"] == 'b').sum() < 6)
 
-        sm2 = copy.deepcopy(sm).split_category_value("col2", 'b', 0.6667)
+        sm2 = copy.deepcopy(sm).split_category_value("col2", 'b', 'c', 0.6667)
         assert((sm2.df["col2"] == 'a').sum() == 3)
-        assert((sm2.df["col2"] == 'a').sum() + (sm2.df["col2"] == 'b').sum() < 6)
+        assert((sm2.df["col2"] == 'c').sum() == 2)
 
         with pytest.raises(ValueError):
             _ = copy.deepcopy(sm).split_category_value("col1")
