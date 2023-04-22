@@ -73,8 +73,11 @@ class SKExplainer(ABC):
                 y_position = i // grid_size
 
                 plt_image = plt.imread(os.path.join(images_dir,
-                                                    images_list[i]))
+                                                    image_filename))
+                axes[x_position, y_position].set_title(image_filename)
+                axes[x_position, y_position].axis("off")
                 axes[x_position, y_position].imshow(plt_image)
 
             plt.subplots_adjust(left=0.0, right=1.0, bottom=0.0, top=1.0)
+            plt.tight_layout()
             plt.savefig(path)
