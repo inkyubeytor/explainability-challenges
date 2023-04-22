@@ -2,6 +2,7 @@ from typing import Any, List, Optional
 
 import torch
 import torchvision
+from PIL import Image
 from torch import Tensor
 
 from ...lib.trace import Trace, trace as _trace
@@ -86,3 +87,27 @@ class ImageManipulator:
         self.image = transform(self.image).int()
 
         return self, {}
+
+    @_trace
+    def dual_class_attack(self, image2_path: str) -> Self:
+        """
+        Create a dual-class image by injecting another image.
+
+        :param image2_path: The path to the image to inject.
+        :return: self
+        """
+        to_pil = torchvision.transforms.ToPILImage()
+        to_tensor = torchvision.transforms.ToTensor()
+        background = to_pil(self.image.squeeze() / 255).convert("RGBA")
+        foreground = Image.open(image2_path)
+        bg_size = background.size
+        new_size = int(bg_size[0] / 3)
+        foreground = foreground.resize((new_size, new_size))
+
+        background.paste(foreground, (0, 0), foreground)
+
+        background = background.convert("RGB")
+
+        self.image = to_tensor(background).unsqueeze(dim=0)
+
+        return self, {"image2_path": image2_path}

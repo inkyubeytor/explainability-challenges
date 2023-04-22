@@ -14,6 +14,8 @@ import torchvision
 from PIL import Image
 from torchattacks import PGD
 
+from core.image_manipulator import ImageManipulator
+
 sys.path.insert(0, '..')
 
 
@@ -29,16 +31,11 @@ def adversarial_attack(model, image):
 
 
 def noise_attack(image, std=250):
-    mean = torch.zeros(image.shape)
-    std = torch.ones(image.shape) * std
-    noise = torch.normal(mean, std)
-
-    return torch.clip(image + noise, min=0, max=255).int()
+    return ImageManipulator(image).noise_attack(std=std).image
 
 
 def blur_attack(image):
-    transform = torchvision.transforms.GaussianBlur(kernel_size=15)
-    return transform(image).int()
+    return ImageManipulator(image).blur_attack().image
 
 
 def ood_attack(ood_dataset):
@@ -47,25 +44,13 @@ def ood_attack(ood_dataset):
 
 
 def occlusion_attack(image):
-    transform = torchvision.transforms.RandomErasing(p=1)
-    return transform(image).int()
+    return ImageManipulator(image).occlusion_attack().image
 
 
 # TODO: Automatically download cat image
 def dual_class_attack(image, image2_path):
-    to_pil = torchvision.transforms.ToPILImage()
-    to_tensor = torchvision.transforms.ToTensor()
-    background = to_pil(image.squeeze() / 255).convert("RGBA")
-    foreground = Image.open(image2_path)
-    bg_size = background.size
-    new_size = int(bg_size[0] / 3)
-    foreground = foreground.resize((new_size, new_size))
+    return ImageManipulator(image).dual_class_attack(image2_path).image
 
-    background.paste(foreground, (0, 0), foreground)
-
-    background = background.convert("RGB")
-
-    return to_tensor(background).unsqueeze(dim=0)
 
 # image = torchvision.io\
 # .read_image("/content/imagenette2/val/n02102040/n02102040_1082.JPEG")\
