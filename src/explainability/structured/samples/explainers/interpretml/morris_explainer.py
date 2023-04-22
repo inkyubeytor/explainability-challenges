@@ -21,9 +21,13 @@ class MorrisExplainer(SKExplainer):
         x, _, _, _ = sm.train_test_split()
 
         x = encoder.transform(x)
+        feature_names = [col.split("__")[1]
+                         for col in encoder.get_feature_names_out()]
         x = scaler.transform(x)
 
-        msa = MorrisSensitivity(trained_model.named_steps["model"], x)
+        msa = MorrisSensitivity(trained_model.named_steps["model"],
+                                x,
+                                feature_names=feature_names)
         g = msa.explain_global()
         fig = g.visualize()
         fig.write_image(str(path), format="png")

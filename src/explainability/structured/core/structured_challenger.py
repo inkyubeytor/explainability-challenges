@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Optional
 
 import pandas as pd
+import numpy as np
 from sklearn.base import BaseEstimator, clone
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
@@ -57,8 +58,9 @@ class SKChallenger(ABC):
             x, y, _, _ = sm.train_test_split()
             model = clone(self._model)
             encoder = ColumnTransformer(transformers=[
-                ("onehot", OneHotEncoder(sparse_output=False), x.columns)
-            ])
+                ("onehot", OneHotEncoder(sparse_output=False),
+                 x.select_dtypes(exclude=np.number).columns)],
+                remainder="passthrough")
             pipeline = Pipeline([("encoder", encoder),
                                  ("scaler", StandardScaler()),
                                  ("model", model)])
