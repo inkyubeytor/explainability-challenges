@@ -1,7 +1,5 @@
 import copy
 import pandas as pd
-import numpy as np
-import pytest
 from sklearn.linear_model import LinearRegression
 
 from explainability.structured.core.structured_challenger import \

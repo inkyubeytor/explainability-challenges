@@ -247,7 +247,8 @@ class StructuredManipulator:
             raise ValueError("Chosen value not in column.")
 
         old_val = dup_value
-        new_val = f"{old_val}_{rng.integers(0, 1e6)}" if new_value is None else new_value
+        new_val = f"{old_val}_{rng.integers(0, 1e6)}" \
+            if new_value is None else new_value
         values.append(new_val)
         new_col = pd.Categorical(self.df[column], categories=values)
         flags = self.df.index[new_col == old_val].values
