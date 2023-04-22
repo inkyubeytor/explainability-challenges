@@ -1,5 +1,5 @@
-The structured API reference
-=============================
+The Structured API Reference
+============================
 
 Core
 -----
@@ -10,5 +10,5 @@ Core
 .. autoclass:: explainability.structured.core.structured_challenger.SKChallenger
    :members:
 
-The image API reference
-=============================
+.. autoclass:: explainability.structured.core.structured_explainer.SKExplainer
+   :members:
