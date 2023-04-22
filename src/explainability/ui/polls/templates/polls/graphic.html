@@ -1,0 +1,35 @@
+<img src="data:image/png;base64,{{ graphic|safe }}">
+
+<form action="/polls/submit", method="post">
+    <p>Which image modification do you think generated this explanation?</p>
+      <input type="radio" id="adversarial" name="previous"
+                                           value="{{mapping.adversarial}}-{{ truth }}">
+  <label for="adversarial">Adversarial Attack</label><br>
+
+  <input type="radio" id="noise" name="previous" value="{{ mapping.noise }}-{{ truth }}">
+  <label for="adversarial">Random Noise</label><br>
+
+  <input type="radio" id="blur" name="previous" value="{{ mapping.blur }}-{{ truth }}">
+  <label for="adversarial">Random Blur</label><br>
+
+  <input type="radio" id="ood" name="previous" value="{{ mapping.ood  }}-{{ truth }}">
+  <label for="ood">Out-of-Distribution Image</label><br>
+
+  <input type="radio" id="occlusion" name="previous"
+                                     value="{{mapping.occlusion}}-{{ truth }}">
+  <label for="occlusion">Occlusion</label><br>
+
+  <input type="radio" id="dual" name="previous" value="{{mapping.dual}}-{{ truth }}">
+  <label for="dual">Extraneous object</label><br>
+
+  <input type="radio" id="none" name="previous" value="{{mapping.none}}-{{ truth }}">
+  <label for="none">No modification</label><br>
+
+  <input type="submit" value="Submit">
+</form>
+
+{{ data }}
+{{ data2 }}
+
+</body>
+</html>
