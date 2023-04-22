@@ -8,28 +8,21 @@ Original file is located at
 """
 
 import sys
-
-import torch
-import torch.nn as nn
-
-sys.path.insert(0, '..')
-import torchattacks
-
-import numpy as np
-import matplotlib.pyplot as plt
-import json
-
 import torch
 import torchvision
+
+import matplotlib.pyplot as plt
 import torchvision.datasets as dsets
 import torchvision.transforms as transforms
 
 from torchvision import models
 from robustbench.utils import clean_accuracy
-
 from torchattacks import PGD
 from PIL import Image
-import matplotlib.pyplot as plt
+
+import json
+
+sys.path.insert(0, '..')
 
 #TODO Standardize image i/o data type (float, int, (0,...,255), (0, 1))
 
