@@ -113,7 +113,8 @@ class ImageManipulator:
 
         self.image = to_tensor(background).unsqueeze(dim=0)
 
-        return self, {"image2_path": image2_path}
+        return self, {"image2_path": image2_path,
+                      "loc": loc}
 
     @_trace
     def adversarial_attack(self, model: Any) -> Self:
