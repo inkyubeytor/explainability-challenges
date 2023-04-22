@@ -11,7 +11,7 @@ import sys
 
 import torch
 
-from core.image_manipulator import ImageManipulator
+from .core.image_manipulator import ImageManipulator
 
 sys.path.insert(0, '..')
 

@@ -1,4 +1,3 @@
-from django.shortcuts import render, redirect
 import base64
 from io import BytesIO
 from random import randrange
@@ -54,7 +53,7 @@ def submit(request):
 
     try:
         data = request.POST['previous']
-    except:
+    except KeyError:  # is this sufficient?
         # Warning! Failing silently.
         # TODO: Proper error handling
         return redirect("graphic")
@@ -90,7 +89,8 @@ def result(request):
 
 
 def graphic(request):
-    # image = read_image("/Users/jrast/Downloads/test_img.JPEG").float().unsqueeze(dim=0)
+    # image = read_image("/Users/jrast/Downloads/test_img.JPEG")\
+    # .float().unsqueeze(dim=0)
     # image = dls[0].one_batch()[0]
     # Handle state data
 

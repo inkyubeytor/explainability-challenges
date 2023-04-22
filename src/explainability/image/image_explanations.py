@@ -7,6 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1hHwBaMwJG86Q3Uaqx1hJJcjmMXLx4umt
 """
 import warnings
+from typing import Any
 
 import cv2
 import numpy as np
@@ -41,10 +42,11 @@ class DotDict(dict):
 
 class GuidedBackprop:
     """
-       Produces gradients generated with guided back propagation from the given image
+       Produces gradients generated with guided back propagation from the given
+       image.
     """
 
-    def __init__(self, model):
+    def __init__(self, model: Any) -> None:
         self.model = model
         self.gradients = None
         self.forward_relu_outputs = []
@@ -108,7 +110,7 @@ class GuidedBackprop:
         return gradients_as_arr
 
 
-def __preprocess_image(pil_im, resize_im=True):
+def _preprocess_image(pil_im, resize_im=True):
     """
         Processes image for CNNs
 
@@ -126,7 +128,7 @@ def __preprocess_image(pil_im, resize_im=True):
     if type(pil_im) != Image.Image:
         try:
             pil_im = Image.fromarray(pil_im)
-        except Exception as e:
+        except ValueError:
             print("could not transform PIL_img to a PIL Image object. "
                   "Please check input.")
 
@@ -150,7 +152,7 @@ def __preprocess_image(pil_im, resize_im=True):
     return im_as_var
 
 
-def __get_positive_negative_saliency(gradient):
+def _get_positive_negative_saliency(gradient):
     """
         Generates positive and negative saliency maps based on the gradient
     Args:
@@ -167,7 +169,7 @@ def __get_positive_negative_saliency(gradient):
 """# Eigen CAM Helper Code"""
 
 
-def predict(input_tensor, model, device, detection_threshold):
+def predict(input_tensor, model, detection_threshold):
     outputs = model(input_tensor)
     pred_classes = [coco_names[i] for i in outputs[0]['labels'].cpu().numpy()]
     pred_labels = outputs[0]['labels'].cpu().numpy()
@@ -201,7 +203,7 @@ def draw_boxes(boxes, labels, classes, image):
 
 
 coco_names = ['__background__', 'person', 'bicycle', 'car', 'motorcycle',
-              'airplane', \
+              'airplane',
               'bus', 'train', 'truck', 'boat', 'traffic light', 'fire hydrant',
               'N/A',
               'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog',
@@ -232,7 +234,7 @@ COLORS = np.random.uniform(0, 255, size=(len(coco_names), 3))
 def renormalize_cam_in_bounding_boxes(boxes, image_float_np, grayscale_cam,
                                       labels, classes):
     """Normalize the CAM to be in the range [0, 1] 
-    inside every bounding boxes, and zero outside of the bounding boxes. """
+    inside every bounding boxes, and zero outside the bounding boxes. """
     renormalized_cam = np.zeros(grayscale_cam.shape, dtype=np.float32)
     images = []
     for x1, y1, x2, y2 in boxes:
@@ -250,7 +252,7 @@ def renormalize_cam_in_bounding_boxes(boxes, image_float_np, grayscale_cam,
     return image_with_bounding_boxes
 
 
-"""# Explainations"""
+"""Explanations"""
 
 
 # Question: Does this only work with resnet50?
@@ -272,28 +274,28 @@ def grad_cam(image, model):
 
 def guided_backprop(image, model):
     to_pil = torchvision.transforms.ToPILImage()
-    to_tensor = torchvision.transforms.ToTensor()
+    # to_tensor = torchvision.transforms.ToTensor()
 
     class_int = torch.nn.functional.softmax(model(image), dim=1).argmax()
 
     original_image = to_pil(image.squeeze() / 255).convert("RGB")
-    prep_img = __preprocess_image(original_image)
+    prep_img = _preprocess_image(original_image)
 
     GBP = GuidedBackprop(model)
 
     guided_grads = GBP.generate_gradients(prep_img, class_int)
 
-    return __get_positive_negative_saliency(guided_grads)
+    return _get_positive_negative_saliency(guided_grads)
 
 
 def eigen_cam(in_image, og_image, model):
-    image = (in_image).int().float()
+    image = in_image.int().float()
 
-    og_image = (og_image).int().float()
+    og_image = og_image.int().float()
 
     image = np.ascontiguousarray(
         torch.moveaxis(image.squeeze().int(), 0, 2).numpy(), dtype=np.uint8)
-    image_float_np = np.float32(image) / 255
+    # image_float_np = np.float32(image) / 255
 
     og_image = np.ascontiguousarray(
         torch.moveaxis(og_image.squeeze().int(), 0, 2).numpy(), dtype=np.uint8)
@@ -327,7 +329,7 @@ def eigen_cam(in_image, og_image, model):
     grayscale_cam = grayscale_cam[0, :]
     cam_image = show_cam_on_image(og_image_float_np, grayscale_cam,
                                   use_rgb=True)
-    # And lets draw the boxes again:
+    # And let's draw the boxes again:
     image_with_bounding_boxes = draw_boxes(boxes, labels, classes, cam_image)
 
     return image_with_bounding_boxes
