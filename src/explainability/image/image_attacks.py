@@ -10,9 +10,6 @@ Original file is located at
 import sys
 
 import torch
-import torchvision
-from PIL import Image
-from torchattacks import PGD
 
 from core.image_manipulator import ImageManipulator
 
@@ -22,12 +19,7 @@ sys.path.insert(0, '..')
 # TODO Standardize image i/o data type (float, int, (0,...,255), (0, 1))
 
 def adversarial_attack(model, image):
-    label = torch.nn.functional.softmax(model(image.to("cpu"))).argmax()
-    label = label.unsqueeze(dim=0)
-    atk = PGD(model, eps=8 / 255, alpha=2 / 225, steps=10, random_start=True)
-    # atk.set_normalization_used(mean=[0.485, 0.456, 0.406],
-    # std=[0.229, 0.224, 0.225])
-    return (atk(image / 256, label).cpu() * 255).int()
+    return ImageManipulator(image).noise_attack(model).image
 
 
 def noise_attack(image, std=250):

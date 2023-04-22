@@ -4,6 +4,7 @@ import torch
 import torchvision
 from PIL import Image
 from torch import Tensor
+from torchattacks import PGD
 
 from ...lib.trace import Trace, trace as _trace
 
@@ -111,3 +112,21 @@ class ImageManipulator:
         self.image = to_tensor(background).unsqueeze(dim=0)
 
         return self, {"image2_path": image2_path}
+
+    @_trace
+    def adversarial_attack(self, model: Any) -> Self:
+        """
+        Apply torch adversarial attack to an image.
+
+        :param model: The torch model to use for the attack.
+        :return: self
+        """
+        label = torch.nn.functional.softmax(
+            model(self.image.to("cpu"))).argmax()
+        label = label.unsqueeze(dim=0)
+        atk = PGD(model, eps=8 / 255, alpha=2 / 225, steps=10,
+                  random_start=True)
+
+        self.image = (atk(self.image / 256, label).cpu() * 255).int()
+
+        return self, {}
