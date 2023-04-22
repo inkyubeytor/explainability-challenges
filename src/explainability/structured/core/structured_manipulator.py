@@ -1,11 +1,10 @@
 from typing import Any, List, Literal, Optional, Tuple, Union
 
-from ...lib.trace import trace as _trace, Trace
-
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
+from ...lib.trace import Trace, trace as _trace
 
 # hack to support Python 3.10
 # for Python 3.11 and higher, import Self from typing
@@ -48,7 +47,12 @@ class StructuredManipulator:
         self.label_column = label_column
 
     @property
-    def trace(self):
+    def trace(self) -> str:
+        """
+        Returns a traceback of all operations performed on the manipulator.
+
+        :return: Newline-separated traceback of all operations performed.
+        """
         return "\n".join(str(t) for t in self._traces)
 
     @property
@@ -93,7 +97,8 @@ class StructuredManipulator:
 
             if dtypes == "numeric" and not is_numeric_dtype(self.df[column]):
                 raise ValueError("Provided column not a numeric column.")
-            elif isinstance(dtypes, List) and self.df[column].dtype not in dtypes:
+            elif isinstance(dtypes, List) and \
+                    self.df[column].dtype not in dtypes:
                 raise ValueError(f"Provided column has type not in {dtypes}")
 
         return column
