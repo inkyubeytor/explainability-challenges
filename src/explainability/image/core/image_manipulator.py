@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 import torch
 import torchvision
@@ -90,11 +90,13 @@ class ImageManipulator:
         return self, {}
 
     @_trace
-    def dual_class_attack(self, image2_path: str) -> Self:
+    def dual_class_attack(self, image2_path: str,
+                          loc: Tuple[int, int] = (0, 0)) -> Self:
         """
         Create a dual-class image by injecting another image.
 
         :param image2_path: The path to the image to inject.
+        :param loc: The location the image should be injected.
         :return: self
         """
         to_pil = torchvision.transforms.ToPILImage()
@@ -105,7 +107,7 @@ class ImageManipulator:
         new_size = int(bg_size[0] / 3)
         foreground = foreground.resize((new_size, new_size))
 
-        background.paste(foreground, (0, 0), foreground)
+        background.paste(foreground, loc, foreground)
 
         background = background.convert("RGB")
 

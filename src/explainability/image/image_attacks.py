@@ -40,8 +40,8 @@ def occlusion_attack(image):
 
 
 # TODO: Automatically download cat image
-def dual_class_attack(image, image2_path):
-    return ImageManipulator(image).dual_class_attack(image2_path).image
+def dual_class_attack(image, image2_path, loc=(0, 0)):
+    return ImageManipulator(image).dual_class_attack(image2_path, loc).image
 
 
 # image = torchvision.io\
