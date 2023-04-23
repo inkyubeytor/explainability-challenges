@@ -21,6 +21,7 @@ To run only fast tests, run
 pytest -m "not slow"
 ```
 
+## OS-Specific Issue
 
 For Windows devices, if the script hangs due to `kaleido`, run
 ```bash
