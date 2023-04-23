@@ -29,4 +29,4 @@ class TestSample:
         cc.train_models()
 
         me = MorrisExplainer()
-        me.explain_challenge(cc, "out.png")
+        me.explain_challenge(cc, "morris_explainer.png")
