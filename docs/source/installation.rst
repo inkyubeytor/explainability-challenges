@@ -2,7 +2,7 @@ Installation
 =====
 
 
-To use `explainability-challenges`, first install it using pip:
+To use ``explainability-challenges``, first install it using pip:
 
 .. code-block:: console
 
