@@ -314,7 +314,7 @@ def eigen_cam(in_image, og_image, model):
     input_tensor = input_tensor.unsqueeze(0)
 
     # Run the model and display the detections
-    boxes, classes, labels, indices = predict(input_tensor, model, device, 0.9)
+    boxes, classes, labels, indices = predict(input_tensor, model, 0.9)
     # image = draw_boxes(boxes, labels, classes, image)
 
     target_layers = [model.backbone]

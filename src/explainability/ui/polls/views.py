@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import torchvision
 import torchvision.transforms as transforms
+from datasets import load_dataset
 from PIL import Image
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
@@ -16,8 +17,10 @@ from explainability.image.image_attacks import blur_attack, dual_class_attack, \
 from explainability.image.image_explanations import eigen_cam, grad_cam, \
     guided_backprop
 
+
+data = load_dataset("frgfm/imagenette", 'full_size')
+
 transform = transforms.Compose([
-    # you can add other transformations in this list
     transforms.Resize(256),
     transforms.CenterCrop(224),
     transforms.ToTensor()
@@ -32,14 +35,17 @@ attack_dict = {"noise": 1,
                "adversarial": 99,
                "none": 0}
 
-testset = torchvision.datasets.ImageFolder(
-    root='/Users/jrast/Downloads/imagenette2/val', transform=transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True)
+#testset = torchvision.datasets.ImageFolder(
+#    root='/Users/jrast/Downloads/imagenette2/val', transform=transform)
+#testloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True)
+
+
 
 
 def start(request):
     request.session['truth'] = []
     request.session['response'] = []
+    
     return redirect('graphic')
 
 
@@ -93,14 +99,17 @@ def graphic(request):
     # .float().unsqueeze(dim=0)
     # image = dls[0].one_batch()[0]
     # Handle state data
+    
+    idx = randrange(0, len(data['train']))
+    image = data['train'][idx]['image']
 
-    image = next(iter(testloader))[0]
-    image = (image * 255).int().float()
+    image = (transform(image) * 255).int().float()
+
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
         pretrained=True)
 
     attack = randrange(0, 8)
-    print(attack)
+    #print(attack)
 
     if attack == 0:
         test2 = noise_attack(image)
