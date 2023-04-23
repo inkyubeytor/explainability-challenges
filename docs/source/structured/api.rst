@@ -27,9 +27,12 @@ Explainer
 Samples
 -------
 
-.. automodule:: explainability.structured.samples.challengers
-   :members:
+Challengers
+^^^^^^^^^^^
 
-.. automodule:: explainability.structured.samples.explainers
-   :members:
+.. autoclass:: explainability.structured.samples.challengers.categorize_challenger.CategorizeChallenger
 
+Explainers
+^^^^^^^^^^
+
+.. autoclass:: explainability.structured.samples.explainers.interpretml.morris_explainer.MorrisExplainer
