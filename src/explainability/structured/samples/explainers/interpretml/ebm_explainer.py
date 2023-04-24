@@ -1,4 +1,3 @@
-from interpret.blackbox import MorrisSensitivity
 from sklearn.pipeline import Pipeline
 
 from explainability.structured.core.structured_explainer import Path, \
