@@ -15,6 +15,7 @@ class ReplaceChallenger(SKChallenger):
         for i in range(2, 5):
             prop = 1 / i
             name = f"challenge_{prop}"
-            sm = StructuredManipulator(self.df, self.label_column, self.random_state)
+            sm = StructuredManipulator(self.df, self.label_column,
+                                       self.random_state)
             sm.replace_random_values(proportion=prop)
             self.challenges[name] = sm
