@@ -1,3 +1,4 @@
+import numpy as np
 from interpret.blackbox import PartialDependence
 from sklearn.pipeline import Pipeline
 
@@ -9,27 +10,24 @@ from explainability.structured.core.structured_manipulator import \
 
 class PDPExplainer(SKFeatureExplainer):
     """
-    Uses Morris sensitivity global explanations to explain challenges.
+    Uses partial dependence global explanations to explain challenges.
     """
 
     def explain_global(self, trained_model: Pipeline,
                        sm: StructuredManipulator,
                        feature: str,
                        path: Path) -> None:
-        encoder = trained_model.named_steps["encoder"]
-        scaler = trained_model.named_steps["scaler"]
+        preprocessor = trained_model.named_steps["preprocessor"]
 
         x, _, _, _ = sm.train_test_split()
 
-        x = encoder.transform(x)
-        feature_names = [col.split("__")[1]
-                         for col in encoder.get_feature_names_out()]
-        x = scaler.transform(x)
+        x = preprocessor.transform(x)
+        feature_names = preprocessor.get_feature_names_out()
 
         if feature not in feature_names:
             raise ValueError(f"feature {feature} not found."
                              f"Did you check its name after encoding?")
-        feat_idx = feature_names.index(feature)
+        feat_idx = np.where(feature_names == feature)[0].item()
 
         pdp = PartialDependence(trained_model.named_steps["model"],
                                 x,

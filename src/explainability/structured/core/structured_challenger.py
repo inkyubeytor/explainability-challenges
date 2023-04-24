@@ -48,7 +48,7 @@ class SKChallenger(ABC):
         """
         raise NotImplementedError
 
-    def train_models(self) -> None:
+    def train_models(self, interpret: bool = False) -> None:
         """
         Train a model on each dataset for the challenge.
 
@@ -57,12 +57,21 @@ class SKChallenger(ABC):
         for challenge_name, sm in self.challenges.items():
             x, y, _, _ = sm.train_test_split()
             model = clone(self._model)
-            encoder = ColumnTransformer(transformers=[
-                ("onehot", OneHotEncoder(sparse_output=False),
-                 x.select_dtypes(exclude=np.number).columns)],
-                remainder="passthrough")
-            pipeline = Pipeline([("encoder", encoder),
-                                 ("scaler", StandardScaler()),
+            preprocessor = ColumnTransformer(transformers=[
+                ("onehot",
+                 OneHotEncoder(sparse_output=False),
+                 x.select_dtypes(exclude=np.number).columns),
+                ("scaler",
+                 StandardScaler(),
+                 x.select_dtypes(include=np.number).columns)],
+                remainder="passthrough",
+                verbose_feature_names_out=False)
+            if interpret:
+                preprocessor.fit(x, y)
+                feature_names = preprocessor.get_feature_names_out()
+                model.set_params(feature_names=feature_names)
+
+            pipeline = Pipeline([("preprocessor", preprocessor),
                                  ("model", model)])
 
             # noinspection PyTypeChecker

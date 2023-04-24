@@ -54,10 +54,5 @@ class TestSKChallenger:
             x_train, y_train, x_test, y_test = \
                 sc.challenges[challenge].train_test_split(test_proportion=0.34)
             pipe = sc.models[challenge]
-            enc = pipe.named_steps["encoder"]
-            scal = pipe.named_steps["scaler"]
-            model = pipe.named_steps["model"]
-            x_train = scal.transform(enc.transform(x_train))
-            x_test = scal.transform(enc.transform(x_test))
-            assert(model.score(x_train, y_train) == 1)
-            assert(model.score(x_test, y_test) == 1)
+            assert(pipe.score(x_train, y_train) == 1)
+            assert(pipe.score(x_test, y_test) == 1)
