@@ -52,6 +52,8 @@ class SKChallenger(ABC):
         """
         Train a model on each dataset for the challenge.
 
+        :param interpret: Indicator for whether model is from interpret
+            package.
         :return: None
         """
         for challenge_name, sm in self.challenges.items():
