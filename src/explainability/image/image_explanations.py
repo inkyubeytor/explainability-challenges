@@ -258,10 +258,9 @@ def renormalize_cam_in_bounding_boxes(boxes, image_float_np, grayscale_cam,
 # Question: Does this only work with resnet50?
 
 def grad_cam(image, model):
-    args = DotDict({"use_cuda": False})
     target_layers = [model.layer4[-1]]
     cam = GradCAM(model=model, target_layers=target_layers,
-                  use_cuda=args.use_cuda)
+                  use_cuda=False)
     targets = None
     grayscale_cam = cam(input_tensor=image, targets=targets)
 
