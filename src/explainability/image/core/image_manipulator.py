@@ -2,6 +2,7 @@ from typing import Any, List, Optional, Tuple
 
 import torch
 import torchvision
+from torchvision import models
 from PIL import Image
 from torch import Tensor
 from torchattacks import PGD
@@ -90,46 +91,54 @@ class ImageManipulator:
         return self, {}
 
     @_trace
-    def dual_class_attack(self, image2_path: str,
-                          loc: Tuple[int, int] = (0, 0)) -> Self:
+    def dual_class_attack(self, image: Tensor, dataset: Tensor,
+                          loc: Tuple[int, int] = None) -> Self:
         """
         Create a dual-class image by injecting another image.
 
-        :param image2_path: The path to the image to inject.
-        :param loc: The location the image should be injected.
+        :param image: The image to be modified
+        :param dataset: A dataset from which to draw image to be injected
+        :param loc: Location of image to be injected. Defaults to random
         :return: self
         """
         to_pil = torchvision.transforms.ToPILImage()
         to_tensor = torchvision.transforms.ToTensor()
-        background = to_pil(self.image.squeeze() / 255).convert("RGBA")
-        foreground = Image.open(image2_path)
+        i = torch.randint(len(dataset), size=(1, 1))[0]
+        foreground = to_pil(dataset[i].squeeze()).convert("RGBA")
+        background = to_pil(image.squeeze() / 255).convert("RGBA")
         bg_size = background.size
         new_size = int(bg_size[0] / 3)
+
+        if loc == None:
+            loc1 = torch.randint(int(2 * bg_size[0] / 3), size=(1, 1))[0]
+            loc2 = torch.randint(int(2 * bg_size[0] / 3), size=(1, 1))[0]
+            loc = (loc1, loc2)
+
         foreground = foreground.resize((new_size, new_size))
-
         background.paste(foreground, loc, foreground)
-
         background = background.convert("RGB")
 
-        self.image = to_tensor(background).unsqueeze(dim=0)
-
-        return self, {"image2_path": image2_path,
+        self.image = to_tensor(background)
+        return self, {"dataset": dataset,
                       "loc": loc}
 
     @_trace
-    def adversarial_attack(self, model: Any) -> Self:
+    def adversarial_attack(self, model=models.resnet50(pretrained=True).to('cpu').eval()) -> Self:
         """
         Apply torch adversarial attack to an image.
 
         :param model: The torch model to use for the attack.
         :return: self
         """
-        label = torch.nn.functional.softmax(
-            model(self.image.to("cpu"))).argmax()
+        transform = torchvision.transforms.Compose([
+        torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                        std=[0.229, 0.224, 0.225]),
+        ])
+        label = torch.nn.functional.softmax(model(transform(self.image).to('cpu'))).argmax()
         label = label.unsqueeze(dim=0)
-        atk = PGD(model, eps=8 / 255, alpha=2 / 225, steps=10,
-                  random_start=True)
+        atk = PGD(model, eps=8/255, alpha=2/225, steps=10, random_start=True)
+        #atk.set_normalization_used(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        output = atk(self.image, label).cpu()
 
-        self.image = (atk(self.image / 256, label).cpu() * 255).int()
-
+        self.image = output
         return self, {}

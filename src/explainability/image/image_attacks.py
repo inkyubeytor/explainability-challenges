@@ -10,7 +10,7 @@ Original file is located at
 import sys
 
 import torch
-
+from torchvision import models
 from .core.image_manipulator import ImageManipulator
 
 sys.path.insert(0, '..')
@@ -18,8 +18,8 @@ sys.path.insert(0, '..')
 
 # TODO Standardize image i/o data type (float, int, (0,...,255), (0, 1))
 
-def adversarial_attack(model, image):
-    return ImageManipulator(image).noise_attack(model).image
+def adversarial_attack(image, model=models.resnet50(pretrained=True).to('cpu').eval()):
+    return ImageManipulator(image).adversarial_attack(model).image
 
 
 def noise_attack(image, std=250):
@@ -32,7 +32,7 @@ def blur_attack(image):
 
 def ood_attack(ood_dataset):
     i = torch.randint(len(ood_dataset), size=(1, 1))[0]
-    return (ood_dataset[i]).int()
+    return (ood_dataset[i])
 
 
 def occlusion_attack(image):
@@ -40,8 +40,9 @@ def occlusion_attack(image):
 
 
 # TODO: Automatically download cat image
-def dual_class_attack(image, image2_path, loc=(0, 0)):
-    return ImageManipulator(image).dual_class_attack(image2_path, loc).image
+
+def dual_class_attack(image, dataset, loc=None):
+    return ImageManipulator(image).dual_class_attack(image, dataset, loc).image
 
 
 # image = torchvision.io\

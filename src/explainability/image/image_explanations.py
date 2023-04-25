@@ -196,7 +196,7 @@ def draw_boxes(boxes, labels, classes, image):
             (int(box[2]), int(box[3])),
             color, 2
         )
-        cv2.putText(image, classes[i], (int(box[0]), int(box[1] - 5)),
+        cv2.putText(image, classes[i], (int(box[0]), int(box[1] + 15)),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2,
                     lineType=cv2.LINE_AA)
     return image
@@ -267,7 +267,7 @@ def grad_cam(image, model):
 
     grayscale_cam = grayscale_cam[0, :]
     visualization = show_cam_on_image(
-        np.moveaxis(image.numpy()[0] / 255, 0, -1), grayscale_cam, use_rgb=True)
+        np.moveaxis(image.numpy()[0], 0, -1), grayscale_cam, use_rgb=True)
 
     return visualization
 
