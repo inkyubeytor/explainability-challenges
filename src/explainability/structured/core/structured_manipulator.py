@@ -256,7 +256,7 @@ class StructuredManipulator:
             if new_value is None else new_value
         values.append(new_val)
         new_col = pd.Categorical(self.df[column], categories=values)
-        flags = self.df.index[new_col == old_val].values
+        flags = np.where(new_col == old_val)[0]
         rng.shuffle(flags)
         flags = flags[:int(len(flags) * proportion)]
         new_col[flags] = new_val
