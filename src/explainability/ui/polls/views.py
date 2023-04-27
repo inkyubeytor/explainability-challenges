@@ -2,6 +2,7 @@ import base64
 from io import BytesIO
 from random import randrange
 
+import random
 import numpy as np
 import torchvision
 import torchvision.transforms as transforms
@@ -17,7 +18,12 @@ from explainability.image.image_explanations import eigen_cam, grad_cam, \
     guided_backprop
 
 
-data = load_dataset("frgfm/imagenette", 'full_size')
+#data = load_dataset("frgfm/imagenette", 'full_size')
+
+attacks_demo = [2, 0, 1, 4, 2, 99, 2, 0, 99, 99, 4, 1]
+classes_demo = ["trombone", "garbage_truck", "coil", "mantis", "milk_can",
+                "matchstick", "chain_saw", "parachute", "matchstick",
+                "matchstick", "slug", "spotlight"]
 
 transform = transforms.Compose([
     transforms.Resize(256),
@@ -75,6 +81,33 @@ def submit(request):
 
     return redirect('graphic')
 
+@csrf_exempt
+def submit_demo(request):
+    if 'truth' not in request.session:
+        request.session['truth'] = []
+
+    if 'response' not in request.session:
+        request.session['response'] = []
+
+    try:
+        data = request.POST['previous']
+    except KeyError:  # is this sufficient?
+        # Warning! Failing silently.
+        # TODO: Proper error handling
+        return redirect("graphic")
+
+    response, truth = (data.split('-'))
+    request.session['truth'].append(truth)
+    request.session['response'].append(response)
+    # My code breaks if I do not include this and I have no idea why
+    request.session['data'] = 8
+
+    if len(request.session['truth']) >= 3:
+        return redirect("result")
+
+    return redirect('demo_graphic')
+
+
 
 def result(request):
     correct = 0
@@ -90,7 +123,52 @@ def result(request):
             incorrect += 1
 
     return render(request, 'polls/result.html', {"correct": correct,
-                                                 "incorrect": incorrect})
+                                                 "incorrect": incorrect,
+                                                 "score": correct / (correct + incorrect)})
+
+
+def demo(request):
+    idx_list = random.sample(range(12), 10)
+    # Save idex list
+    request.session['truth'] = []
+    request.session['response'] = []
+    request.session['idx_list'] = idx_list
+ 
+    return redirect("demo_graphic")
+
+    # Redirect to demo_graphic
+
+
+def demo_graphic(request):
+    idx_list = request.session['idx_list']
+    i = len(request.session['truth'])
+    idx = idx_list[i]
+    image = torchvision.io.read_image(f"/Users/jrast/Desktop/demo_imgs/{idx}.png").numpy()
+
+    image = np.moveaxis(image, 0, 2)
+
+    buffer = BytesIO()
+    im = Image.fromarray(image)
+    im.save(buffer, "PNG")
+    buffer.seek(0)
+    image_png = buffer.getvalue()
+    buffer.close()
+
+    graphic = base64.b64encode(image_png)
+    graphic = graphic.decode('utf-8')
+
+    print('demo')
+
+    return render(request, 'polls/graphic_demo.html', {'graphic': graphic,
+                                                       "class" :
+                                                       classes_demo[idx],
+                                                  "mapping": attack_dict,
+                                                  "data":
+                                                      request.session['truth'],
+                                                  "data2":
+                                                      request.session[
+                                                          'response'],
+                                                  'truth': attacks_demo[idx]})
 
 
 def graphic(request):
