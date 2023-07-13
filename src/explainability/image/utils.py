@@ -1,3 +1,9 @@
+import torch
+import math
+
+import numpy as np
+import matplotlib.pyplot as plt
+
 def prepare_image_for_plotting(image):
     # If the image is a PyTorch tensor, convert it to a NumPy array
     if torch.is_tensor(image):
