@@ -18,7 +18,10 @@ sys.path.insert(0, '..')
 
 # TODO Standardize image i/o data type (float, int, (0,...,255), (0, 1))
 
-def adversarial_attack(image, model=models.resnet50(pretrained=True).to('cpu').eval()):
+def adversarial_attack(image, model=None).to('cpu').eval()):
+    if model=None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model=models.resnet50(pretrained=True).to(device).eval()
     return ImageManipulator(image).adversarial_attack(model).image
 
 
@@ -39,35 +42,5 @@ def occlusion_attack(image):
     return ImageManipulator(image).occlusion_attack().image
 
 
-# TODO: Automatically download cat image
-
 def dual_class_attack(image, dataset, loc=None):
     return ImageManipulator(image).dual_class_attack(image, dataset, loc).image
-
-
-# image = torchvision.io\
-# .read_image("/content/imagenette2/val/n02102040/n02102040_1082.JPEG")\
-# .float().unsqueeze(dim=0)
-# ood_dataset = torchvision.io\
-# .read_image("/content/imagenette2/train/n01440764/
-# ILSVRC2012_val_00000293.JPEG").float().unsqueeze(dim=0)
-# model = models.resnet50(pretrained=True).to(device).eval()
-
-# test1 = adversarial_attack(model, image)
-# test2 = noise_attack(image)
-# test3 = blur_attack(image)
-# test4 = ood_attack(ood_dataset)
-# test5 = occlusion_attack(image)
-# test6 = dual_class_attack(image, "/content/cat.png")
-
-# plt.imshow(torch.moveaxis(test1.squeeze(), 0, 2))
-
-# plt.imshow(torch.moveaxis(test2.squeeze(), 0, 2))
-
-# plt.imshow(torch.moveaxis(test3.squeeze(), 0, 2))
-
-# plt.imshow(torch.moveaxis(test4.squeeze(), 0, 2))
-
-# plt.imshow(torch.moveaxis(test5.squeeze(), 0, 2))
-
-# plt.imshow(torch.moveaxis(test6.squeeze(), 0, 2))
