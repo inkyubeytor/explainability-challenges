@@ -4,6 +4,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def prepare_image_for_plotting(image):
     # If the image is a PyTorch tensor, convert it to a NumPy array
     if torch.is_tensor(image):
@@ -15,8 +16,10 @@ def prepare_image_for_plotting(image):
                 image = (image * 255).round().astype(np.uint8)
         elif image.dtype.kind == 'u':
             if image.max() > 255:
-                raise ValueError('Image with dtype uint8 must have values in range 0-255')
-    # If the image is a NumPy array, make sure the data type is either float or uint8
+                raise ValueError(
+                    'Image with dtype uint8 must have values in range 0-255')
+    # If the image is a NumPy array
+    # make sure the data type is either float or uint8
     elif isinstance(image, np.ndarray):
         if image.dtype.kind == 'f':
             if image.max() > 1:
@@ -25,11 +28,13 @@ def prepare_image_for_plotting(image):
                 image = (image * 255).round().astype(np.uint8)
         elif image.dtype.kind == 'u':
             if image.max() > 255:
-                raise ValueError('Image with dtype uint8 must have values in range 0-255')
+                raise ValueError(
+                    'Image with dtype uint8 must have values in range 0-255')
         else:
             raise ValueError('Image dtype must be float or uint8')
     else:
-        raise ValueError('Image type must be a PyTorch tensor or a NumPy array')
+        raise ValueError(
+            'Image type must be a PyTorch tensor or a NumPy array')
 
     # If the image has channels first, move the channels to the last dimension
     if image.shape[0] < image.shape[-1]:
@@ -55,7 +60,8 @@ def plot_images(images, captions=None):
                 axes[i, j].imshow(images[idx])
                 axes[i, j].axis('off')  # Turn off the axis labels
                 if captions is not None and idx < len(captions):
-                    axes[i, j].set_title(captions[idx])  # Set the caption as title
+                    # Set the caption as title
+                    axes[i, j].set_title(captions[idx])
             else:
                 axes[i, j].axis('off')  # Turn off the axis if there's no image
 
@@ -64,4 +70,3 @@ def plot_images(images, captions=None):
 
     # Show the plot
     plt.show()
-

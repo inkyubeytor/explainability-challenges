@@ -3,7 +3,6 @@ from typing import Any, List, Optional, Tuple
 import torch
 import torchvision
 from torchvision import models
-from PIL import Image
 from torch import Tensor
 from torchattacks import PGD
 
@@ -109,7 +108,7 @@ class ImageManipulator:
         bg_size = background.size
         new_size = int(bg_size[0] / 3)
 
-        if loc == None:
+        if loc is None:
             loc1 = torch.randint(int(2 * bg_size[0] / 3), size=(1, 1))[0]
             loc2 = torch.randint(int(2 * bg_size[0] / 3), size=(1, 1))[0]
             loc = (loc1, loc2)
@@ -123,21 +122,26 @@ class ImageManipulator:
                       "loc": loc}
 
     @_trace
-    def adversarial_attack(self, model=models.resnet50(pretrained=True).to('cpu').eval()) -> Self:
+    def adversarial_attack(self, model=None) -> Self:
         """
         Apply torch adversarial attack to an image.
 
         :param model: The torch model to use for the attack.
         :return: self
         """
+        if model is None:
+            model = models.resnet50(pretrained=True).to('cpu').eval()
         transform = torchvision.transforms.Compose([
         torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                         std=[0.229, 0.224, 0.225]),
         ])
-        label = torch.nn.functional.softmax(model(transform(self.image).to('cpu'))).argmax()
+        input = transform(self.image).to('cpu')
+        logits = model(input)
+        label = torch.nn.functional.softmax(logits).argmax()
         label = label.unsqueeze(dim=0)
         atk = PGD(model, eps=8/255, alpha=2/225, steps=10, random_start=True)
-        #atk.set_normalization_used(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        # atk.set_normalization_used(mean=[0.485, 0.456, 0.406],
+        #                            std=[0.229, 0.224, 0.225])
         output = atk(self.image, label).cpu()
 
         self.image = output

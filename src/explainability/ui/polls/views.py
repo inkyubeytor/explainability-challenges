@@ -1,24 +1,15 @@
 import base64
 from io import BytesIO
-from random import randrange
-
 import random
 import numpy as np
 import torchvision
 import torchvision.transforms as transforms
-from datasets import load_dataset
 from PIL import Image
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
-from torchvision.models import alexnet, resnet50
-
-from explainability.image.image_attacks import blur_attack, dual_class_attack, \
-    noise_attack, occlusion_attack
-from explainability.image.image_explanations import eigen_cam, grad_cam, \
-    guided_backprop
 
 
-#data = load_dataset("frgfm/imagenette", 'full_size')
+# data = load_dataset("frgfm/imagenette", 'full_size')
 
 attacks_demo = [2, 0, 1, 4, 2, 99, 2, 0, 99, 99, 4, 1]
 classes_demo = ["trombone", "garbage_truck", "coil", "mantis", "milk_can",
@@ -40,17 +31,15 @@ attack_dict = {"noise": 1,
                "adversarial": 99,
                "none": 0}
 
-#testset = torchvision.datasets.ImageFolder(
-#    root='/Users/jrast/Downloads/imagenette2/val', transform=transform)
-#testloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True)
-
-
+# testset = torchvision.datasets.ImageFolder(
+#     root='/Users/jrast/Downloads/imagenette2/val', transform=transform)
+# testloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True)
 
 
 def start(request):
     request.session['truth'] = []
     request.session['response'] = []
-    
+
     return redirect('graphic')
 
 
@@ -81,6 +70,7 @@ def submit(request):
 
     return redirect('graphic')
 
+
 @csrf_exempt
 def submit_demo(request):
     if 'truth' not in request.session:
@@ -108,7 +98,6 @@ def submit_demo(request):
     return redirect('demo_graphic')
 
 
-
 def result(request):
     correct = 0
     incorrect = 0
@@ -122,9 +111,10 @@ def result(request):
         else:
             incorrect += 1
 
-    return render(request, 'polls/result.html', {"correct": correct,
-                                                 "incorrect": incorrect,
-                                                 "score": correct / (correct + incorrect)})
+    return render(request, 'polls/result.html',
+                  {"correct": correct,
+                   "incorrect": incorrect,
+                   "score": correct / (correct + incorrect)})
 
 
 def demo(request):
@@ -133,17 +123,17 @@ def demo(request):
     request.session['truth'] = []
     request.session['response'] = []
     request.session['idx_list'] = idx_list
- 
-    return redirect("demo_graphic")
 
     # Redirect to demo_graphic
+    return redirect("demo_graphic")
 
 
 def demo_graphic(request):
     idx_list = request.session['idx_list']
     i = len(request.session['truth'])
     idx = idx_list[i]
-    image = torchvision.io.read_image(f"/Users/jrast/Desktop/demo_imgs/{idx}.png").numpy()
+    image = torchvision.io.read_image(
+        f"/Users/jrast/Desktop/demo_imgs/{idx}.png").numpy()
 
     image = np.moveaxis(image, 0, 2)
 
@@ -159,82 +149,80 @@ def demo_graphic(request):
 
     print('demo')
 
-    return render(request, 'polls/graphic_demo.html', {'graphic': graphic,
-                                                       "class" :
-                                                       classes_demo[idx],
-                                                  "mapping": attack_dict,
-                                                  "data":
-                                                      request.session['truth'],
-                                                  "data2":
-                                                      request.session[
-                                                          'response'],
-                                                  'truth': attacks_demo[idx]})
+    return render(request, 'polls/graphic_demo.html',
+                  {'graphic': graphic,
+                   "class": classes_demo[idx],
+                   "mapping": attack_dict,
+                   "data": request.session['truth'],
+                   "data2": request.session['response'],
+                   'truth': attacks_demo[idx]})
 
 
-def graphic(request):
-    # image = read_image("/Users/jrast/Downloads/test_img.JPEG")\
-    # .float().unsqueeze(dim=0)
-    # image = dls[0].one_batch()[0]
-    # Handle state data
-    
-    idx = randrange(0, len(data['train']))
-    image = data['train'][idx]['image']
+# def graphic(request):
+#     # image = read_image("/Users/jrast/Downloads/test_img.JPEG")\
+#     # .float().unsqueeze(dim=0)
+#     # image = dls[0].one_batch()[0]
+#     # Handle state data
 
-    image = (transform(image) * 255).int().float()
+#     idx = randrange(0, len(data['train']))
+#     image = data['train'][idx]['image']
 
-    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
-        pretrained=True)
+#     image = (transform(image) * 255).int().float()
 
-    attack = randrange(0, 8)
-    #print(attack)
+#     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
+#         pretrained=True)
 
-    if attack == 0:
-        test2 = noise_attack(image)
-    elif attack == 1:
-        test2 = blur_attack(image)
-    elif attack == 2:
-        test2 = occlusion_attack(image)
-    elif attack == 3:
-        # test2 = ood_attack(ood_dataset)
-        test2 = image
-    elif attack == 4:
-        test2 = dual_class_attack(image, "/Users/jrast/Downloads/cat.png") * 255
-    else:
-        test2 = image
+#     attack = randrange(0, 8)
+#     #print(attack)
 
-    # random = randrange(0, 2)
-    random = 0
+#     if attack == 0:
+#         test2 = noise_attack(image)
+#     elif attack == 1:
+#         test2 = blur_attack(image)
+#     elif attack == 2:
+#         test2 = occlusion_attack(image)
+#     elif attack == 3:
+#         # test2 = ood_attack(ood_dataset)
+#         test2 = image
+#     elif attack == 4:
+#         test2 = dual_class_attack(image, "/Users/jrast/Downloads/cat.png")
+#         test2 = test2 * 255
+#     else:
+#         test2 = image
 
-    # print(random)
+#     # random = randrange(0, 2)
+#     random = 0
 
-    if random == 0:
-        # visualization = eigen_cam(test2, test2, model)
-        visualization = eigen_cam(test2, image, model)
-    elif random == 1:
-        model = resnet50(pretrained=True)
-        visualization = grad_cam(test2, model)
-    else:
-        model = alexnet(pretrained=True)
-        pos, neg = guided_backprop(image, model)
-        # import pdb; pdb.set_trace()
-        visualization = np.moveaxis(pos, 0, 2)
+#     # print(random)
 
-    buffer = BytesIO()
-    image_out = visualization
-    im = Image.fromarray(image_out)
-    im.save(buffer, "PNG")
-    buffer.seek(0)
-    image_png = buffer.getvalue()
-    buffer.close()
+#     if random == 0:
+#         # visualization = eigen_cam(test2, test2, model)
+#         visualization = eigen_cam(test2, image, model)
+#     elif random == 1:
+#         model = resnet50(pretrained=True)
+#         visualization = grad_cam(test2, model)
+#     else:
+#         model = alexnet(pretrained=True)
+#         pos, neg = guided_backprop(image, model)
+#         # import pdb; pdb.set_trace()
+#         visualization = np.moveaxis(pos, 0, 2)
 
-    graphic = base64.b64encode(image_png)
-    graphic = graphic.decode('utf-8')
+#     buffer = BytesIO()
+#     image_out = visualization
+#     im = Image.fromarray(image_out)
+#     im.save(buffer, "PNG")
+#     buffer.seek(0)
+#     image_png = buffer.getvalue()
+#     buffer.close()
 
-    return render(request, 'polls/graphic.html', {'graphic': graphic,
-                                                  "mapping": attack_dict,
-                                                  "data":
-                                                      request.session['truth'],
-                                                  "data2":
-                                                      request.session[
-                                                          'response'],
-                                                  'truth': attack})
+#     graphic = base64.b64encode(image_png)
+#     graphic = graphic.decode('utf-8')
+
+#     return render(request, 'polls/graphic.html', {'graphic': graphic,
+#                                                   "mapping": attack_dict,
+#                                                   "data":
+#                                                       request.session['truth'],
+#                                                   "data2":
+#                                                       request.session[
+#                                                           'response'],
+#                                                   'truth': attack})
