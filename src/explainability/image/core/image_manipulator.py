@@ -66,13 +66,14 @@ class ImageManipulator:
         return self, {"std": std}
 
     @_trace
-    def blur_attack(self) -> Self:
+    def blur_attack(self, kernel_size: int = 15) -> Self:
         """
         Apply a Gaussian blur to an image.
 
+        :param kernel_size: The size of the blur kernel to be applied.
         :return: self
         """
-        transform = torchvision.transforms.GaussianBlur(kernel_size=15)
+        transform = torchvision.transforms.GaussianBlur(kernel_size=kernel_size)
         self.image = transform(self.image).int()
 
         return self, {}

@@ -6,8 +6,6 @@ from .core.image_manipulator import ImageManipulator
 sys.path.insert(0, '..')
 
 
-# TODO Standardize image i/o data type (float, int, (0,...,255), (0, 1))
-
 def adversarial_attack(image, model=None):
     if model is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -19,8 +17,8 @@ def noise_attack(image, std=250):
     return ImageManipulator(image).noise_attack(std=std).image
 
 
-def blur_attack(image):
-    return ImageManipulator(image).blur_attack().image
+def blur_attack(image, kernel_size=15):
+    return ImageManipulator(image).blur_attack(kernel_size=kernel_size).image
 
 
 def ood_attack(ood_dataset):
