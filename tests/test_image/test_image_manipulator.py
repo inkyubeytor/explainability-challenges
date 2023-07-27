@@ -22,7 +22,7 @@ class TestImageManipulator:
         noisy_img = add_noise(img)
 
         assert noisy_img.type() == 'torch.FloatTensor'
-        assert noisy_img.max().item() <= 1.0
+        assert noisy_img.max().item() <= 1.0000
         assert noisy_img.min().item() >= 0.0
         assert (img == noisy_img).all().item() is False
 
@@ -30,7 +30,7 @@ class TestImageManipulator:
         blurry_img = add_blur(img)
 
         assert blurry_img.type() == 'torch.FloatTensor'
-        assert blurry_img.max().item() <= 1.0
+        assert blurry_img.max().item() <= 1.0000
         assert blurry_img.min().item() >= 0.0
         assert (img == blurry_img).all().item() is False
 
@@ -38,7 +38,7 @@ class TestImageManipulator:
         occlueded_img = add_occlusion(img)
 
         assert occlueded_img.type() == 'torch.FloatTensor'
-        assert occlueded_img.max().item() <= 1.0
+        assert occlueded_img.max().item() <= 1.0000
         assert occlueded_img.min().item() >= 0.0
         assert (img == occlueded_img).all().item() is False
 
@@ -52,7 +52,7 @@ class TestImageManipulator:
         dual_class_img = add_dual_class(img, dual_img)
 
         assert dual_class_img.type() == 'torch.FloatTensor'
-        assert dual_class_img.max().item() <= 1.0
+        assert dual_class_img.max().item() <= 1.0000
         assert dual_class_img.min().item() >= 0.0
         assert (img == dual_class_img).all().item() is False
 
@@ -60,6 +60,6 @@ class TestImageManipulator:
         adversarial_img = adversarial_attack(img)
 
         assert adversarial_img.type() == 'torch.FloatTensor'
-        assert adversarial_img.max().item() <= 1.0
+        assert adversarial_img.max().item() <= 1.0000
         assert adversarial_img.min().item() >= 0.0
         assert (img == adversarial_img).all().item() is False
