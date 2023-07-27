@@ -61,7 +61,7 @@ class ImageManipulator:
         std = torch.ones(self.image.shape) * std
         noise = torch.normal(mean, std)
 
-        self.image = torch.clip(self.image + noise, min=0, max=255).int()
+        self.image = torch.clip(self.image + noise, min=0, max=1.0).float()
 
         return self, {"std": std}
 
@@ -74,7 +74,7 @@ class ImageManipulator:
         :return: self
         """
         transform = torchvision.transforms.GaussianBlur(kernel_size=kernel_size)
-        self.image = transform(self.image).int()
+        self.image = transform(self.image)
 
         return self, {}
 
@@ -86,7 +86,7 @@ class ImageManipulator:
         :return: self
         """
         transform = torchvision.transforms.RandomErasing(p=1)
-        self.image = transform(self.image).int()
+        self.image = transform(self.image)
 
         return self, {}
 
@@ -105,7 +105,7 @@ class ImageManipulator:
         to_tensor = torchvision.transforms.ToTensor()
         i = torch.randint(len(dataset), size=(1, 1))[0]
         foreground = to_pil(dataset[i].squeeze()).convert("RGBA")
-        background = to_pil(image.squeeze() / 255).convert("RGBA")
+        background = to_pil(image.squeeze()).convert("RGBA")
         bg_size = background.size
         new_size = int(bg_size[0] / 3)
 

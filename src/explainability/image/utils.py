@@ -5,6 +5,35 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+# Use (C, M, N) float range 0-1 as the cannonical image representation
+def standardize(image):
+    # Test for pixel range (0..1 or 0..255)
+    if (image.max().item() > 1):
+        rescale = True
+    else:
+        rescale = False
+
+    image = image.float()
+
+    # Test for channel location (first / last)
+    if image.shape[0] == 3 or image.shape[0] == 1:
+        move_channel = False
+
+    elif image.shape[2] == 3 or image.shape[0] == 1:
+        move_channel = True
+
+    else:
+        raise "Unknown image shape"
+    
+    if rescale:
+        image = image / 255
+
+    if move_channel:
+        image = torch.moveaxis(image, 2, 0)
+
+    return image
+
+
 def prepare_image_for_plotting(image):
     # If the image is a PyTorch tensor, convert it to a NumPy array
     if torch.is_tensor(image):
