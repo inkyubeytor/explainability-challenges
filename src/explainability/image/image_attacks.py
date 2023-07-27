@@ -7,12 +7,6 @@ sys.path.insert(0, '..')
 
 
 def adversarial_attack(image, model=None):
-    if model is None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model = (models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
-                .to(device).eval())
-
-    image = image.unsqueeze(dim=0)
     return ImageManipulator(image).adversarial_attack(model).image
 
 
